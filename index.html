@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Augustine Lodge No. 972 - Brethren Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        masonicGold: '#D4AF37',
+                        masonicDark: '#1E293B',
+                        masonicBlue: '#0F172A',
+                        masonicRed: '#991B1B',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Masonic & UI Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .cinzel-font { font-family: 'Cinzel', serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-masonicGold selection:text-slate-950">
+
+    <!-- Header / Navbar -->
+    <header id="main-header" class="bg-masonicBlue border-b border-slate-800 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('calendar')">
+                <div class="w-12 h-12 rounded-full bg-slate-800 border-2 border-masonicGold flex items-center justify-center text-masonicGold text-xl shadow-inner">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <div>
+                    <h1 id="brand-lodge-name" class="cinzel-font text-lg sm:text-xl font-bold text-masonicGold tracking-wider">St. Augustine Lodge No. 972</h1>
+                    <p id="brand-lodge-subtitle" class="text-xs text-slate-400">United Grand Lodge of England</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav id="navbar-links" class="hidden md:flex items-center space-x-1">
+                <button onclick="switchTab('calendar')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-slate-800 hover:text-masonicGold text-masonicGold bg-slate-800/60" data-tab="calendar">
+                    <i class="fa-solid fa-calendar-days mr-1.5"></i> Master Calendar
+                </button>
+                <button onclick="switchTab('visitor')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-slate-800 hover:text-masonicGold text-slate-300" data-tab="visitor">
+                    <i class="fa-solid fa-door-open mr-1.5"></i> Wanting to Visit Us?
+                </button>
+                <button onclick="switchTab('profile')" id="nav-profile-btn" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-slate-800 hover:text-masonicGold text-slate-300 hidden" data-tab="profile">
+                    <i class="fa-solid fa-user-gear mr-1.5"></i> My Profile
+                </button>
+                <button onclick="switchTab('admin')" id="nav-admin-btn" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-slate-800 hover:text-masonicGold text-slate-300 hidden" data-tab="admin">
+                    <i class="fa-solid fa-shield-halved mr-1.5"></i> Lodge Admin
+                    <span id="nav-pending-badge" class="hidden ml-1.5 bg-amber-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                </button>
+            </nav>
+
+            <!-- Auth / Login State -->
+            <div class="flex items-center space-x-3">
+                <div id="auth-unlogged" class="flex items-center space-x-2">
+                    <button onclick="openLoginModal('register')" class="hidden sm:flex bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium px-3.5 py-2 rounded-lg text-sm transition items-center">
+                        <i class="fa-solid fa-user-plus mr-1.5 text-masonicGold"></i> Request Account
+                    </button>
+                    <button onclick="openLoginModal('signin')" class="bg-masonicGold text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm shadow hover:bg-amber-400 transition flex items-center">
+                        <i class="fa-solid fa-right-to-bracket mr-2"></i> Member Sign In
+                    </button>
+                </div>
+                <div id="auth-logged-in" class="hidden flex items-center space-x-3">
+                    <div class="text-right hidden sm:block">
+                        <div id="logged-user-name" class="text-sm font-semibold text-masonicGold">Bro. Henry Padgham</div>
+                        <div id="logged-user-role" class="text-xs text-slate-400">Master Mason</div>
+                    </div>
+                    <button onclick="logoutUser()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-sm transition border border-slate-700" title="Sign Out">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+                <!-- Mobile Menu Toggle -->
+                <button onclick="toggleMobileMenu()" class="md:hidden text-slate-300 hover:text-masonicGold p-2">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-slate-900 border-t border-slate-800 px-4 pt-2 pb-4 space-y-1">
+            <button onclick="switchTab('calendar'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800">Master Calendar</button>
+            <button onclick="switchTab('visitor'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800">Wanting to Visit Us?</button>
+            <button onclick="openLoginModal('register'); toggleMobileMenu();" id="mob-register-btn" class="block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-masonicGold hover:bg-slate-800">Request Member Account</button>
+            <button onclick="switchTab('profile'); toggleMobileMenu();" id="mob-profile-btn" class="hidden block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800">My Profile</button>
+            <button onclick="switchTab('admin'); toggleMobileMenu();" id="mob-admin-btn" class="hidden block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800">Lodge Admin</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: MASTER CALENDAR & EVENTS -->
+        <div id="tab-calendar" class="tab-content active space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-800/50 p-6 rounded-2xl border border-slate-800 backdrop-blur">
+                <div>
+                    <h2 class="cinzel-font text-2xl font-bold text-masonicGold">Lodge Master Calendar</h2>
+                    <p class="text-sm text-slate-400">View upcoming meetings, festive boards, social functions, and member-published visitations.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- View Selector -->
+                    <div class="bg-slate-900 p-1 rounded-xl border border-slate-700 flex items-center space-x-1">
+                        <button onclick="setCalendarView('grid')" id="view-grid-btn" class="px-3 py-1.5 rounded-lg text-xs font-medium transition bg-masonicGold text-slate-950">
+                            <i class="fa-solid fa-calendar-days mr-1"></i> Calendar Grid
+                        </button>
+                        <button onclick="setCalendarView('list')" id="view-list-btn" class="px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-400 hover:text-slate-200">
+                            <i class="fa-solid fa-list mr-1"></i> Tile List
+                        </button>
+                    </div>
+                    <!-- Create Event Button (Visible to authorised Officers & Members) -->
+                    <button onclick="openCreateEventModal()" id="quick-create-event-btn" class="hidden bg-masonicGold hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-semibold transition shadow flex items-center">
+                        <i class="fa-solid fa-plus mr-1.5"></i> Add New Event
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters & Legend Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-800/30 px-4 py-3 rounded-xl border border-slate-800 text-xs">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-slate-400 font-medium mr-2">Filter:</span>
+                    <button onclick="filterEvents('all')" class="filter-chip px-3 py-1 rounded-lg bg-slate-700 text-slate-200 font-medium transition" data-filter="all">All Events</button>
+                    <button onclick="filterEvents('meeting')" class="filter-chip px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 transition" data-filter="meeting">Regular Meetings</button>
+                    <button onclick="filterEvents('social')" class="filter-chip px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 transition" data-filter="social">Social Events</button>
+                    <button onclick="filterEvents('visitation')" class="filter-chip px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 transition" data-filter="visitation">External Visitations</button>
+                </div>
+                <!-- Colour Key -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span><span class="text-slate-300">Meetings</span></div>
+                    <div class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span><span class="text-slate-300">Social</span></div>
+                    <div class="flex items-center space-x-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span class="text-slate-300">Visitations</span></div>
+                </div>
+            </div>
+
+            <!-- Calendar Grid View Container -->
+            <div id="calendar-grid-container" class="space-y-4">
+                <div class="bg-slate-800/80 rounded-2xl border border-slate-700 overflow-hidden shadow-lg">
+                    <!-- Month Navigation Header -->
+                    <div class="px-6 py-4 bg-slate-900 border-b border-slate-700 flex items-center justify-between">
+                        <h3 id="current-month-title" class="cinzel-font text-lg font-bold text-masonicGold">November 2026</h3>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button onclick="resetToCurrentMonth()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">Today</button>
+                            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <!-- Day of Week Header -->
+                    <div class="grid grid-cols-7 bg-slate-900/60 text-center text-xs font-semibold text-slate-400 py-2 border-b border-slate-800">
+                        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                    </div>
+                    <!-- Days Grid -->
+                    <div id="calendar-days-grid" class="grid grid-cols-7 bg-slate-800/40 gap-px border-b border-slate-800">
+                        <!-- Populated via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Selected Date Quick Details & Interest Drawer -->
+                <div id="calendar-day-detail" class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 hidden">
+                    <!-- Populated on click -->
+                </div>
+            </div>
+
+            <!-- Tile List View Container (Hidden by default) -->
+            <div id="calendar-list-container" class="space-y-4 hidden">
+                <div id="events-list-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Populated via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: WANTING TO VISIT US? (External Guest & Visitor Portal) -->
+        <div id="tab-visitor" class="tab-content space-y-6">
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl border border-slate-700 shadow-xl max-w-3xl mx-auto">
+                <div class="text-center space-y-2 mb-8">
+                    <span class="bg-masonicGold/10 text-masonicGold px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest border border-masonicGold/20">Visiting Brethren</span>
+                    <h2 class="cinzel-font text-3xl font-bold text-masonicGold">Wanting to Visit St. Augustine Lodge No. 972?</h2>
+                    <p class="text-sm text-slate-300">Visiting Brethren under the UGLE or recognised Grand Lodges are warmly received. Please submit your credentials and dining requirements below.</p>
+                </div>
+
+                <form id="visitor-registration-form" onsubmit="submitVisitorRegistration(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Full Name & Masonic Rank *</label>
+                            <input type="text" id="vis-name" required placeholder="W. Bro. Arthur Pendelton, PM" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Lodge Name & Number *</label>
+                            <input type="text" id="vis-lodge" required placeholder="Builders Lodge No. 1234" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Grand Lodge Constitution *</label>
+                            <select id="vis-constitution" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                                <option value="UGLE">United Grand Lodge of England (UGLE)</option>
+                                <option value="District">District Grand Lodge / Overseas</option>
+                                <option value="Recognised">Recognised Sister Grand Lodge</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Select Upcoming Meeting to Attend *</label>
+                            <select id="vis-meeting-select" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Festive Board Dining Booking</label>
+                            <select id="vis-dining" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                                <option value="yes">Attending Festive Board (£30.00)</option>
+                                <option value="meeting-only">Meeting Only (No Dining)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Dietary Requirements / Allergies</label>
+                            <input type="text" id="vis-dietary" placeholder="e.g. Vegetarian, Gluten-Free" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 text-center">
+                        <button type="submit" class="bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold px-8 py-3.5 rounded-xl text-sm transition shadow-lg w-full sm:w-auto">
+                            Submit Visitor Registration Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 3: MY PROFILE (Hidden until logged in) -->
+        <div id="tab-profile" class="tab-content space-y-6">
+            <div class="max-w-3xl mx-auto bg-slate-800/80 p-8 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+                <div class="flex items-center space-x-4 border-b border-slate-700 pb-6">
+                    <div class="w-16 h-16 rounded-2xl bg-masonicGold text-slate-950 font-bold text-2xl flex items-center justify-center shadow-inner" id="profile-initials">
+                        HP
+                    </div>
+                    <div>
+                        <h2 id="profile-display-name" class="cinzel-font text-2xl font-bold text-masonicGold">Bro. Henry Padgham</h2>
+                        <p id="profile-display-role" class="text-sm text-slate-400">Master Mason</p>
+                    </div>
+                </div>
+
+                <form onsubmit="saveUserProfile(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Preferred Salutation & Name</label>
+                            <input type="text" id="prof-name" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Masonic Rank / Office</label>
+                            <input type="text" id="prof-rank" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Email Address</label>
+                            <input type="email" id="prof-email" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Grand Lodge Certificate No.</label>
+                            <input type="text" id="prof-cert" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-2">Dietary Notes for Festive Board</label>
+                        <input type="text" id="prof-dietary" placeholder="e.g. Vegetarian, None" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm transition shadow">
+                            Save Profile Changes
+                        </button>
+                    </div>
+                </form>
+
+                <!-- My Registered Interests Section -->
+                <div class="border-t border-slate-700 pt-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="cinzel-font text-lg font-bold text-masonicGold">My Registered Interests</h3>
+                            <p class="text-xs text-slate-400">Social functions and external visitations you have expressed interest in attending.</p>
+                        </div>
+                        <span id="profile-interest-count" class="bg-slate-900 border border-slate-700 text-masonicGold text-xs font-semibold px-3 py-1 rounded-full">0 Events</span>
+                    </div>
+                    <div id="profile-interests-list" class="space-y-3">
+                        <!-- Populated via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: LODGE ADMIN & SETTINGS (Role-Locked) -->
+        <div id="tab-admin" class="tab-content space-y-6">
+            <div class="max-w-4xl mx-auto bg-slate-800/80 p-8 rounded-2xl border border-slate-700 shadow-xl space-y-8">
+                <div>
+                    <span class="bg-masonicRed/20 text-red-400 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest border border-masonicRed/30">Restricted Area</span>
+                    <h2 class="cinzel-font text-2xl font-bold text-masonicGold mt-2">Lodge Admin & OEM Settings</h2>
+                    <p class="text-sm text-slate-400">Customise branding, footer details, new member approvals, and officer event permissions.</p>
+                </div>
+
+                <!-- Pending Member Account Applications (Secretary / Admin Only) -->
+                <div id="admin-pending-registrations-section" class="bg-slate-900/60 p-6 rounded-xl border border-amber-500/30 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="font-semibold text-slate-200 text-base flex items-center">
+                                <i class="fa-solid fa-user-clock text-masonicGold mr-2"></i> Pending Member Account Applications
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Verify Lodge membership credentials and approve or decline portal access requests.</p>
+                        </div>
+                        <span id="admin-pending-count" class="bg-amber-500/20 border border-amber-500/30 text-masonicGold text-xs font-semibold px-3 py-1 rounded-full self-start sm:self-auto">0 Pending</span>
+                    </div>
+                    <div id="admin-pending-list" class="space-y-3">
+                        <!-- Populated via JavaScript -->
+                    </div>
+                </div>
+
+                <form onsubmit="saveLodgeSettings(event)" class="space-y-6 bg-slate-900/60 p-6 rounded-xl border border-slate-800">
+                    <h3 class="font-semibold text-slate-200 text-base border-b border-slate-800 pb-3 flex items-center">
+                        <i class="fa-solid fa-paintbrush text-masonicGold mr-2"></i> Lodge Branding & OEM Customisation
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Lodge Full Name</label>
+                            <input type="text" id="setting-lodge-name" value="St. Augustine Lodge No. 972" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Constitution / Subtitle</label>
+                            <input type="text" id="setting-lodge-subtitle" value="United Grand Lodge of England" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Footer Copyright / Details</label>
+                            <input type="text" id="setting-footer-text" value="St. Augustine Lodge No. 972. Meeting regularly at the Masonic Hall." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Secretary Contact Email</label>
+                            <input type="email" id="setting-sec-email" value="secretary@staugustine972.org.uk" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm transition shadow">
+                            Save Branding Settings
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Officer Management Overview -->
+                <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                    <h3 class="font-semibold text-slate-200 text-base border-b border-slate-800 pb-3 flex items-center">
+                        <i class="fa-solid fa-user-shield text-masonicGold mr-2"></i> Officer Permissions Summary
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                            <div class="font-semibold text-masonicGold">Senior Steward</div>
+                            <div class="text-xs text-slate-400 mt-1">Can create & manage Regular Meetings & Festive Boards.</div>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                            <div class="font-semibold text-masonicGold">Social Secretary</div>
+                            <div class="text-xs text-slate-400 mt-1">Can create & manage Social Events & White Tables.</div>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                            <div class="font-semibold text-masonicGold">Lodge Secretary / Admin</div>
+                            <div class="text-xs text-slate-400 mt-1">Full OEM settings, member records editing & role management.</div>
+                        </div>
+                    </div>
+
+                    <!-- Member Visitation Publishing Governance Toggle -->
+                    <div class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <div class="font-semibold text-sm text-slate-200">Member Visitation Publishing Policy</div>
+                            <div class="text-xs text-slate-400">Allow all signed-in Brethren to propose External Visitations on any date, or require individual Secretary approval per member.</div>
+                        </div>
+                        <select id="setting-visitation-policy" onchange="updateVisitationPolicy(this.value)" class="bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-medium text-masonicGold focus:outline-none focus:border-masonicGold">
+                            <option value="all_members">All Signed-In Brethren (Default)</option>
+                            <option value="approved_only">Secretary-Approved Brethren Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Lodge Membership Directory & Member Data Editor (Secretary Only) -->
+                <div id="admin-member-directory-section" class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="font-semibold text-slate-200 text-base flex items-center">
+                                <i class="fa-solid fa-address-book text-masonicGold mr-2"></i> Lodge Membership Directory & Data Editor
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Edit Brethren details, Masonic ranks, Grand Lodge certificates, dietary notes, and portal permissions.</p>
+                        </div>
+                        <span id="admin-member-count" class="bg-slate-800 border border-slate-700 text-masonicGold text-xs font-semibold px-3 py-1 rounded-full self-start sm:self-auto">4 Members</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider">
+                                    <th class="py-2.5 px-3">Brother / Member</th>
+                                    <th class="py-2.5 px-3">Rank / Office</th>
+                                    <th class="py-2.5 px-3">Portal Role</th>
+                                    <th class="py-2.5 px-3">Visitations</th>
+                                    <th class="py-2.5 px-3">Contact & Cert No.</th>
+                                    <th class="py-2.5 px-3">Dietary Notes</th>
+                                    <th class="py-2.5 px-3 text-right">Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-members-tbody" class="divide-y divide-slate-800/60 text-slate-200">
+                                <!-- Populated via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Event & Visitation Interest Register -->
+                <div class="bg-slate-900/60 p-6 rounded-xl border border-slate-800 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="font-semibold text-slate-200 text-base flex items-center">
+                                <i class="fa-solid fa-clipboard-list text-masonicGold mr-2"></i> Event & Visitation Interest Register
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Live delegation and social attendance interest submitted by Brethren.</p>
+                        </div>
+                        <span id="admin-interest-total" class="bg-slate-800 border border-slate-700 text-masonicGold text-xs font-semibold px-3 py-1 rounded-full self-start sm:self-auto">0 Registrations</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider">
+                                    <th class="py-2.5 px-3">Brother / Member</th>
+                                    <th class="py-2.5 px-3">Event / Visitation</th>
+                                    <th class="py-2.5 px-3">Category</th>
+                                    <th class="py-2.5 px-3">Date</th>
+                                    <th class="py-2.5 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-interests-tbody" class="divide-y divide-slate-800/60 text-slate-200">
+                                <!-- Populated via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="main-footer-element" class="bg-masonicBlue border-t border-slate-800 mt-12 py-8 text-center text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p id="footer-text-display">St. Augustine Lodge No. 972. Meeting regularly at the Masonic Hall.</p>
+            <p>Protected under UGLE guidelines & Freemasonry data privacy protocols.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL: LOGIN / ROLE SELECTOR & MEMBER ACCOUNT REGISTRATION -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-full bg-masonicGold/10 text-masonicGold border border-masonicGold/20 mx-auto flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h3 class="cinzel-font text-xl font-bold text-masonicGold">Brethren Portal Access</h3>
+                <p class="text-xs text-slate-400">Sign in as an existing member or request a new St. Augustine Lodge No. 972 account.</p>
+            </div>
+
+            <!-- Mode Toggle Tabs -->
+            <div class="grid grid-cols-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700 text-xs font-semibold">
+                <button type="button" id="auth-tab-signin" onclick="switchAuthModalView('signin')" class="py-2 rounded-lg bg-masonicGold text-slate-950 transition">
+                    Member Sign In
+                </button>
+                <button type="button" id="auth-tab-register" onclick="switchAuthModalView('register')" class="py-2 rounded-lg text-slate-300 hover:text-white transition">
+                    Create Account
+                </button>
+            </div>
+
+            <!-- View 1: Existing Member Sign In -->
+            <div id="auth-view-signin" class="space-y-3">
+                <div id="login-role-list" class="space-y-2.5">
+                    <!-- Populated dynamically from lodgeMembers -->
+                </div>
+                <div class="pt-2 text-center border-t border-slate-800">
+                    <p class="text-xs text-slate-400">New to the Brethren Portal? <button type="button" onclick="switchAuthModalView('register')" class="text-masonicGold hover:underline font-semibold">Request a Member Account</button></p>
+                </div>
+            </div>
+
+            <!-- View 2: Request New Member Account -->
+            <form id="member-registration-form" onsubmit="submitMemberRegistration(event)" class="space-y-3.5 text-sm hidden">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Salutation & Full Name *</label>
+                    <input type="text" id="reg-name" required placeholder="e.g. Bro. Thomas Wright" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-masonicGold">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Masonic Rank *</label>
+                        <select id="reg-rank" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-masonicGold">
+                            <option value="Entered Apprentice">Entered Apprentice</option>
+                            <option value="Fellowcraft">Fellowcraft</option>
+                            <option value="Master Mason" selected>Master Mason</option>
+                            <option value="Past Master">Past Master</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">UGLE Certificate No.</label>
+                        <input type="text" id="reg-cert" placeholder="e.g. UGLE-972-052" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Email Address *</label>
+                    <input type="email" id="reg-email" required placeholder="brother@example.co.uk" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-masonicGold">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Dietary Requirements (Optional)</label>
+                    <input type="text" id="reg-dietary" placeholder="e.g. Vegetarian, None" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-masonicGold">
+                </div>
+                <p class="text-[11px] text-slate-400 bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/80">
+                    <i class="fa-solid fa-shield-halved text-masonicGold mr-1"></i> New accounts are verified by the Lodge Secretary (<strong>W Bro. Robertto Papara</strong>) before activation.
+                </p>
+                <button type="submit" class="w-full bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition shadow">
+                    Submit Account Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT MEMBER DATA (SECRETARY / ADMIN ONLY) -->
+    <div id="edit-member-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative">
+            <button onclick="closeEditMemberModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center space-y-1">
+                <h3 class="cinzel-font text-xl font-bold text-masonicGold">Edit Member Record</h3>
+                <p class="text-xs text-slate-400">Update Lodge register details and portal access permissions.</p>
+            </div>
+
+            <form id="edit-member-form" onsubmit="saveEditedMember(event)" class="space-y-4 text-sm">
+                <input type="hidden" id="edit-mem-id">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Salutation & Full Name *</label>
+                        <input type="text" id="edit-mem-name" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Masonic Rank / Office *</label>
+                        <input type="text" id="edit-mem-rank" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Portal Role / Permissions *</label>
+                        <select id="edit-mem-role" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                            <option value="master_mason">Standard Member / Master Mason</option>
+                            <option value="senior_steward">Senior Steward (Regular Meetings)</option>
+                            <option value="social_sec">Social Secretary (Social Events)</option>
+                            <option value="admin">Lodge Secretary / Admin (Full Access)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Grand Lodge Certificate No.</label>
+                        <input type="text" id="edit-mem-cert" placeholder="e.g. UGLE-972-104" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+                        <input type="email" id="edit-mem-email" placeholder="brother@staugustine972.org.uk" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Dietary Notes</label>
+                        <input type="text" id="edit-mem-dietary" placeholder="e.g. Vegetarian, None" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 border border-slate-700 rounded-xl p-3.5 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-semibold text-slate-200">Can Propose External Visitations</div>
+                        <div class="text-[11px] text-slate-400">Grants permission to add visitation dates on the calendar when individual approval is active.</div>
+                    </div>
+                    <input type="checkbox" id="edit-mem-can-visitation" class="w-4 h-4 accent-amber-400 rounded cursor-pointer">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeEditMemberModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium transition">Cancel</button>
+                    <button type="submit" class="bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs transition shadow">Save Member Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE NEW EVENT -->
+    <div id="create-event-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative">
+            <button onclick="closeCreateEventModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <div class="text-center space-y-1">
+                <h3 id="create-modal-title" class="cinzel-font text-xl font-bold text-masonicGold">Schedule New Lodge Event</h3>
+                <p class="text-xs text-slate-400">Enter event details to publish directly to the master calendar.</p>
+            </div>
+
+            <form id="create-event-form" onsubmit="handleCreateEventSubmit(event)" class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Event Type *</label>
+                    <select id="new-evt-type" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                        <option value="meeting">Regular Meeting & Festive Board</option>
+                        <option value="social">Social Function / White Table</option>
+                        <option value="visitation">External Lodge Visitation</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Event / Visitation Title *</label>
+                    <input type="text" id="new-evt-title" required placeholder="e.g. Official Visit to Builders Lodge No. 1234" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Date *</label>
+                        <input type="date" id="new-evt-date" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Tyling / Start Time *</label>
+                        <input type="text" id="new-evt-time" required placeholder="18:30 Tyling" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Ceremony / Description *</label>
+                    <textarea id="new-evt-desc" rows="3" required placeholder="Third Degree Raising followed by Festive Board." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-masonicGold"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeCreateEventModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium transition">Cancel</button>
+                    <button type="submit" class="bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs transition shadow">Publish Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION MODAL -->
+    <div id="notification-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+            <div id="modal-icon" class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mx-auto flex items-center justify-center text-xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h4 id="modal-title" class="font-bold text-slate-100 text-lg">Success</h4>
+            <p id="modal-message" class="text-xs text-slate-300 leading-relaxed">Action completed successfully.</p>
+            <button onclick="closeNotificationModal()" class="w-full bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition">OK</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // UK Date Formatter Helper (Converts YYYY-MM-DD to DD-MM-YYYY)
+        function formatUKDate(isoDateStr) {
+            if (!isoDateStr || typeof isoDateStr !== 'string') return isoDateStr || '';
+            const parts = isoDateStr.split('-');
+            if (parts.length !== 3) return isoDateStr;
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+
+        // State Management
+        let currentUser = null; // null means unlogged visitor
+        let calendarViewMode = 'grid'; // 'grid' or 'list'
+        let currentFilter = 'all';
+        let currentDateCursor = new Date(2026, 10, 1); // November 2026
+
+        // Lodge OEM Settings
+        let lodgeSettings = {
+            name: "St. Augustine Lodge No. 972",
+            subtitle: "United Grand Lodge of England",
+            footerText: "St. Augustine Lodge No. 972. Meeting regularly at the Masonic Hall.",
+            secEmail: "secretary@staugustine972.org.uk",
+            visitationPolicy: "all_members" // 'all_members' or 'approved_only'
+        };
+
+        // Lodge Members Roster (Editable by Secretary / Admin & synced with My Profile)
+        let lodgeMembers = [
+            {
+                id: 'mem-1',
+                roleKey: 'master_mason',
+                name: 'Bro. Henry Padgham',
+                roleTitle: 'Master Mason',
+                email: 'h.padgham@staugustine972.org.uk',
+                cert: 'UGLE-972-041',
+                dietary: 'None',
+                canProposeVisitation: true
+            },
+            {
+                id: 'mem-2',
+                roleKey: 'social_sec',
+                name: 'Bro. Dan Kirby',
+                roleTitle: 'Social Secretary',
+                email: 'd.kirby@staugustine972.org.uk',
+                cert: 'UGLE-972-038',
+                dietary: 'None',
+                canProposeVisitation: true
+            },
+            {
+                id: 'mem-3',
+                roleKey: 'senior_steward',
+                name: 'Bro. Marius Matis',
+                roleTitle: 'Senior Steward',
+                email: 'm.matis@staugustine972.org.uk',
+                cert: 'UGLE-972-035',
+                dietary: 'No Shellfish',
+                canProposeVisitation: true
+            },
+            {
+                id: 'mem-4',
+                roleKey: 'admin',
+                name: 'W Bro. Robertto Papara',
+                roleTitle: 'Lodge Secretary & Admin',
+                email: 'secretary@staugustine972.org.uk',
+                cert: 'UGLE-972-012',
+                dietary: 'None',
+                canProposeVisitation: true
+            }
+        ];
+
+        // Pending Account Requests Queue (Awaiting Secretary Approval)
+        let pendingMemberApplications = [
+            {
+                id: 'app-1',
+                name: 'Bro. Oliver Bennett',
+                rank: 'Master Mason',
+                cert: 'UGLE-972-048',
+                email: 'o.bennett@example.co.uk',
+                dietary: 'Vegetarian',
+                submittedDate: '2026-11-20'
+            }
+        ];
+
+        // Events Database (Chronologically sorted, ISO YYYY-MM-DD internally, displayed DD-MM-YYYY)
+        let lodgeEvents = [
+            {
+                id: 'evt-1',
+                type: 'meeting',
+                title: 'Regular Lodge Meeting & Installation',
+                date: '2026-11-12',
+                time: '18:00 Tyling',
+                description: 'Annual Installation of the Worshipful Master followed by Festive Board banquet (£30 dining fee).'
+            },
+            {
+                id: 'evt-2',
+                type: 'social',
+                title: 'Ladies Evening & Winter Gala',
+                date: '2026-11-21',
+                time: '19:00 Arrival',
+                description: 'Black tie white table festive banquet celebrating partners and friends of St. Augustine.'
+            },
+            {
+                id: 'evt-3',
+                type: 'meeting',
+                title: 'Second Degree Passing Ceremony',
+                date: '2026-12-10',
+                time: '18:30 Tyling',
+                description: 'Regular communication working through the Fellowcraft degree.'
+            },
+            {
+                id: 'evt-4',
+                type: 'visitation',
+                title: 'Official Visit to Builders Lodge No. 1234',
+                date: '2026-12-18',
+                time: '17:45 Arrival',
+                description: 'Group delegation attending sister lodge installation. Show interest to join car share.'
+            }
+        ];
+
+        // Member Visitations Interest List (Pre-populated with sample delegation interest)
+        let memberVisitations = [
+            {
+                eventId: 'evt-2',
+                member: 'Bro. Dan Kirby',
+                eventTitle: 'Ladies Evening & Winter Gala',
+                eventType: 'social',
+                date: '2026-11-21'
+            },
+            {
+                eventId: 'evt-4',
+                member: 'Bro. Marius Matis',
+                eventTitle: 'Official Visit to Builders Lodge No. 1234',
+                eventType: 'visitation',
+                date: '2026-12-18'
+            }
+        ];
+        let selectedDetailDate = null;
+
+        window.onload = function() {
+            renderLoginRoleList();
+            renderPortal();
+            renderCalendarGrid();
+            renderEventsList();
+            populateVisitorMeetingDropdown();
+            renderInterestRegisters();
+            renderMemberDirectory();
+            renderPendingApplications();
+        };
+
+        // Tab Switching & Authentication Enforcement
+        function switchTab(tabId) {
+            if (tabId === 'profile' && !currentUser) {
+                showModal("Access Denied", "Please sign in to view and edit your member profile.", "error");
+                openLoginModal('signin');
+                return;
+            }
+            if (tabId === 'admin' && (!currentUser || !['admin', 'social_sec'].includes(currentUser.roleKey))) {
+                showModal("Restricted Area", "Lodge Admin & Officer Registers are restricted to the Lodge Secretary or Social Secretary.", "error");
+                return;
+            }
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800/60', 'text-masonicGold');
+                btn.classList.add('text-slate-300');
+                if (btn.dataset.tab === tabId) {
+                    btn.classList.add('bg-slate-800/60', 'text-masonicGold');
+                    btn.classList.remove('text-slate-300');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Login / Registration Modal Handlers
+        function openLoginModal(mode = 'signin') {
+            renderLoginRoleList();
+            switchAuthModalView(mode);
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('member-registration-form').reset();
+        }
+
+        function switchAuthModalView(mode) {
+            const signinTab = document.getElementById('auth-tab-signin');
+            const regTab = document.getElementById('auth-tab-register');
+            const signinView = document.getElementById('auth-view-signin');
+            const regView = document.getElementById('member-registration-form');
+
+            if (mode === 'register') {
+                regTab.className = "py-2 rounded-lg bg-masonicGold text-slate-950 transition";
+                signinTab.className = "py-2 rounded-lg text-slate-300 hover:text-white transition";
+                signinView.classList.add('hidden');
+                regView.classList.remove('hidden');
+            } else {
+                signinTab.className = "py-2 rounded-lg bg-masonicGold text-slate-950 transition";
+                regTab.className = "py-2 rounded-lg text-slate-300 hover:text-white transition";
+                regView.classList.add('hidden');
+                signinView.classList.remove('hidden');
+            }
+        }
+
+        function submitMemberRegistration(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const rank = document.getElementById('reg-rank').value;
+            const cert = document.getElementById('reg-cert').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const dietary = document.getElementById('reg-dietary').value.trim() || 'None';
+
+            const todayUK = new Date();
+            const isoToday = `${todayUK.getFullYear()}-${String(todayUK.getMonth() + 1).padStart(2, '0')}-${String(todayUK.getDate()).padStart(2, '0')}`;
+
+            pendingMemberApplications.push({
+                id: 'app-' + Date.now(),
+                name,
+                rank,
+                cert,
+                email,
+                dietary,
+                submittedDate: isoToday
+            });
+
+            closeLoginModal();
+            renderPendingApplications();
+            renderPortal();
+            showModal(
+                "Account Request Submitted",
+                `Thank you, ${name}. Your account application has been sent to the Lodge Secretary (${lodgeSettings.secEmail}) for verification. Once approved, you will appear in the Brethren Portal directory.`,
+                "success"
+            );
+        }
+
+        function approveMemberApplication(appId) {
+            if (!currentUser || currentUser.roleKey !== 'admin') return;
+            const idx = pendingMemberApplications.findIndex(a => a.id === appId);
+            if (idx === -1) return;
+
+            const app = pendingMemberApplications[idx];
+            pendingMemberApplications.splice(idx, 1);
+
+            lodgeMembers.push({
+                id: 'mem-' + Date.now(),
+                roleKey: 'master_mason',
+                name: app.name,
+                roleTitle: app.rank,
+                email: app.email,
+                cert: app.cert,
+                dietary: app.dietary || 'None',
+                canProposeVisitation: lodgeSettings.visitationPolicy === 'all_members'
+            });
+
+            renderPendingApplications();
+            renderMemberDirectory();
+            renderLoginRoleList();
+            renderPortal();
+            showModal("Member Approved", `${app.name} has been approved and added to the St. Augustine Lodge No. 972 Brethren Portal.`, "success");
+        }
+
+        function declineMemberApplication(appId) {
+            if (!currentUser || currentUser.roleKey !== 'admin') return;
+            const idx = pendingMemberApplications.findIndex(a => a.id === appId);
+            if (idx === -1) return;
+            const app = pendingMemberApplications[idx];
+            pendingMemberApplications.splice(idx, 1);
+            renderPendingApplications();
+            renderPortal();
+            showModal("Application Declined", `Removed account application for ${app.name}.`, "success");
+        }
+
+        function renderPendingApplications() {
+            const listEl = document.getElementById('admin-pending-list');
+            const countEl = document.getElementById('admin-pending-count');
+            const navBadgeEl = document.getElementById('nav-pending-badge');
+            if (!listEl || !countEl) return;
+
+            const count = pendingMemberApplications.length;
+            countEl.innerText = `${count} Pending`;
+            if (navBadgeEl) {
+                if (count > 0 && currentUser && currentUser.roleKey === 'admin') {
+                    navBadgeEl.innerText = count;
+                    navBadgeEl.classList.remove('hidden');
+                } else {
+                    navBadgeEl.classList.add('hidden');
+                }
+            }
+
+            if (count === 0) {
+                listEl.innerHTML = `<div class="bg-slate-800/50 border border-slate-800 rounded-xl p-4 text-xs text-slate-400 text-center">No pending member account applications at present.</div>`;
+                return;
+            }
+
+            listEl.innerHTML = pendingMemberApplications.map(app => `
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="font-bold text-sm text-slate-100">${app.name}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-masonicGold/15 text-masonicGold border border-masonicGold/30 font-semibold">${app.rank}</span>
+                            <span class="text-[11px] text-slate-400">Applied: ${formatUKDate(app.submittedDate)}</span>
+                        </div>
+                        <div class="text-xs text-slate-400">
+                            ${app.email} • Cert: <span class="text-slate-300">${app.cert || 'Not provided'}</span> • Dietary: <span class="text-slate-300">${app.dietary}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 self-start sm:self-auto">
+                        <button onclick="approveMemberApplication('${app.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition flex items-center">
+                            <i class="fa-solid fa-check mr-1"></i> Approve
+                        </button>
+                        <button onclick="declineMemberApplication('${app.id}')" class="bg-slate-700 hover:bg-red-600/80 text-slate-200 hover:text-white font-medium px-3 py-1.5 rounded-lg text-xs transition flex items-center">
+                            <i class="fa-solid fa-xmark mr-1"></i> Decline
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderLoginRoleList() {
+            const container = document.getElementById('login-role-list');
+            if (!container) return;
+
+            const roleDescriptions = {
+                master_mason: 'Regular Member / Master Mason',
+                senior_steward: 'Senior Steward (Can Add Regular Meetings)',
+                social_sec: 'Social Secretary (Can Add Social Events)',
+                admin: 'Lodge Secretary / Admin (Full OEM & Member Edit Controls)'
+            };
+
+            container.innerHTML = lodgeMembers.map(m => {
+                const nameColor = m.roleKey === 'admin'
+                    ? 'text-red-400'
+                    : (m.roleKey === 'senior_steward' || m.roleKey === 'social_sec')
+                        ? 'text-masonicGold'
+                        : 'text-slate-200';
+                return `
+                    <button onclick="loginAsMember('${m.id}')" class="w-full text-left bg-slate-800 hover:bg-slate-700/80 border border-slate-700 p-3.5 rounded-xl transition flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold text-sm ${nameColor}">${m.name}</div>
+                            <div class="text-xs text-slate-400">${m.roleTitle} • ${roleDescriptions[m.roleKey] || 'Member'}</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function loginAsMember(memberId) {
+            const member = lodgeMembers.find(m => m.id === memberId);
+            if (!member) return;
+            currentUser = { ...member };
+            closeLoginModal();
+            renderPortal();
+            renderCalendarGrid();
+            renderEventsList();
+            if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
+            renderInterestRegisters();
+            renderMemberDirectory();
+            renderPendingApplications();
+            showModal("Welcome Brethren", `Successfully signed in as ${member.name} (${member.roleTitle}).`, "success");
+            switchTab('calendar');
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            renderPortal();
+            renderCalendarGrid();
+            renderEventsList();
+            if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
+            renderInterestRegisters();
+            renderMemberDirectory();
+            renderPendingApplications();
+            switchTab('calendar');
+            showModal("Signed Out", "You have successfully signed out of the Member Portal.", "success");
+        }
+
+        function renderPortal() {
+            const unloggedDiv = document.getElementById('auth-unlogged');
+            const loggedDiv = document.getElementById('auth-logged-in');
+            const profileBtn = document.getElementById('nav-profile-btn');
+            const adminBtn = document.getElementById('nav-admin-btn');
+            const mobProfileBtn = document.getElementById('mob-profile-btn');
+            const mobAdminBtn = document.getElementById('mob-admin-btn');
+            const mobRegBtn = document.getElementById('mob-register-btn');
+            const quickCreateBtn = document.getElementById('quick-create-event-btn');
+            const memberDirSection = document.getElementById('admin-member-directory-section');
+            const pendingRegSection = document.getElementById('admin-pending-registrations-section');
+
+            if (currentUser) {
+                unloggedDiv.classList.add('hidden');
+                loggedDiv.classList.remove('hidden');
+                profileBtn.classList.remove('hidden');
+                mobProfileBtn.classList.remove('hidden');
+                if (mobRegBtn) mobRegBtn.classList.add('hidden');
+
+                document.getElementById('logged-user-name').innerText = currentUser.name;
+                document.getElementById('logged-user-role').innerText = currentUser.roleTitle;
+
+                document.getElementById('profile-display-name').innerText = currentUser.name;
+                document.getElementById('profile-display-role').innerText = currentUser.roleTitle;
+                document.getElementById('prof-name').value = currentUser.name;
+                document.getElementById('prof-rank').value = currentUser.roleTitle;
+                document.getElementById('prof-email').value = currentUser.email || '';
+                document.getElementById('prof-cert').value = currentUser.cert || '';
+                document.getElementById('prof-dietary').value = currentUser.dietary || '';
+                document.getElementById('profile-initials').innerText = currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                if (['admin', 'social_sec'].includes(currentUser.roleKey)) {
+                    adminBtn.classList.remove('hidden');
+                    mobAdminBtn.classList.remove('hidden');
+                } else {
+                    adminBtn.classList.add('hidden');
+                    mobAdminBtn.classList.add('hidden');
+                }
+
+                if (memberDirSection) {
+                    memberDirSection.classList.toggle('hidden', currentUser.roleKey !== 'admin');
+                }
+                if (pendingRegSection) {
+                    pendingRegSection.classList.toggle('hidden', currentUser.roleKey !== 'admin');
+                }
+
+                if (['senior_steward', 'social_sec', 'admin'].includes(currentUser.roleKey)) {
+                    quickCreateBtn.innerHTML = '<i class="fa-solid fa-plus mr-1.5"></i> Add New Event';
+                    quickCreateBtn.classList.remove('hidden');
+                } else if (canUserProposeVisitation(currentUser)) {
+                    quickCreateBtn.innerHTML = '<i class="fa-solid fa-compass mr-1.5"></i> Propose Visitation';
+                    quickCreateBtn.classList.remove('hidden');
+                } else {
+                    quickCreateBtn.classList.add('hidden');
+                }
+            } else {
+                unloggedDiv.classList.remove('hidden');
+                loggedDiv.classList.add('hidden');
+                profileBtn.classList.add('hidden');
+                adminBtn.classList.add('hidden');
+                mobProfileBtn.classList.add('hidden');
+                mobAdminBtn.classList.add('hidden');
+                if (mobRegBtn) mobRegBtn.classList.remove('hidden');
+                quickCreateBtn.classList.add('hidden');
+                if (memberDirSection) memberDirSection.classList.add('hidden');
+                if (pendingRegSection) pendingRegSection.classList.add('hidden');
+            }
+        }
+
+        function canUserProposeVisitation(user) {
+            if (!user) return false;
+            if (['admin', 'senior_steward', 'social_sec'].includes(user.roleKey)) return true;
+            if (lodgeSettings.visitationPolicy === 'all_members') return true;
+            return Boolean(user.canProposeVisitation);
+        }
+
+        function updateVisitationPolicy(policy) {
+            lodgeSettings.visitationPolicy = policy;
+            renderPortal();
+            renderMemberDirectory();
+            if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
+            const label = policy === 'all_members'
+                ? 'All signed-in Brethren can now propose External Visitations on any date.'
+                : 'External Visitation publishing now requires individual Secretary approval per member.';
+            showModal("Visitation Policy Updated", label, "success");
+        }
+
+        // Calendar View Switcher
+        function setCalendarView(mode) {
+            calendarViewMode = mode;
+            const gridContainer = document.getElementById('calendar-grid-container');
+            const listContainer = document.getElementById('calendar-list-container');
+            const gridBtn = document.getElementById('view-grid-btn');
+            const listBtn = document.getElementById('view-list-btn');
+
+            if (mode === 'grid') {
+                gridContainer.classList.remove('hidden');
+                listContainer.classList.add('hidden');
+                gridBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition bg-masonicGold text-slate-950";
+                listBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-400 hover:text-slate-200";
+            } else {
+                gridContainer.classList.add('hidden');
+                listContainer.classList.remove('hidden');
+                listBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition bg-masonicGold text-slate-950";
+                gridBtn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition text-slate-400 hover:text-slate-200";
+                renderEventsList();
+            }
+        }
+
+        function changeMonth(dir) {
+            currentDateCursor.setMonth(currentDateCursor.getMonth() + dir);
+            renderCalendarGrid();
+        }
+
+        function resetToCurrentMonth() {
+            currentDateCursor = new Date(2026, 10, 1);
+            renderCalendarGrid();
+        }
+
+        function renderCalendarGrid() {
+            const year = currentDateCursor.getFullYear();
+            const month = currentDateCursor.getMonth();
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('current-month-title').innerText = `${monthNames[month]} ${year}`;
+
+            const gridEl = document.getElementById('calendar-days-grid');
+            gridEl.innerHTML = '';
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const offset = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+            const totalDays = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < offset; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "bg-slate-900/30 min-h-[100px] p-2 opacity-30 border-b border-r border-slate-800";
+                gridEl.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayCell = document.createElement('div');
+                dayCell.className = "bg-slate-900/70 hover:bg-slate-800/80 min-h-[100px] p-2 border-b border-r border-slate-800 transition cursor-pointer flex flex-col justify-between";
+                dayCell.onclick = () => selectCalendarDay(dateStr);
+
+                const matchedEvents = lodgeEvents.filter(e => e.date === dateStr && (currentFilter === 'all' || e.type === currentFilter));
+
+                let eventsHtml = '';
+                matchedEvents.forEach(evt => {
+                    let badgeColor = 'bg-blue-600/30 text-blue-300 border-blue-500/40';
+                    if (evt.type === 'social') badgeColor = 'bg-amber-500/30 text-amber-300 border-amber-500/40';
+                    if (evt.type === 'visitation') badgeColor = 'bg-emerald-500/30 text-emerald-300 border-emerald-500/40';
+
+                    eventsHtml += `<div class="text-[10px] px-1.5 py-0.5 rounded border truncate ${badgeColor} mb-1 font-medium">${evt.title}</div>`;
+                });
+
+                dayCell.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300">${day}</span>
+                        ${matchedEvents.length > 0 ? '<span class="w-1.5 h-1.5 rounded-full bg-masonicGold"></span>' : ''}
+                    </div>
+                    <div class="space-y-1 mt-1">${eventsHtml}</div>
+                `;
+                gridEl.appendChild(dayCell);
+            }
+        }
+
+        function selectCalendarDay(dateStr) {
+            selectedDetailDate = dateStr;
+            const ukDateStr = formatUKDate(dateStr);
+            const detailEl = document.getElementById('calendar-day-detail');
+            const dayEvents = lodgeEvents.filter(e => e.date === dateStr);
+
+            const proposeVisitationBtnHtml = currentUser && canUserProposeVisitation(currentUser)
+                ? `<button onclick="openCreateEventModal('${dateStr}', 'visitation')" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-semibold px-3 py-1.5 rounded-lg text-xs transition flex items-center">
+                       <i class="fa-solid fa-plus mr-1.5"></i> Propose Visitation on ${ukDateStr}
+                   </button>`
+                : (!currentUser
+                    ? `<button onclick="openLoginModal('signin')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-medium px-3 py-1.5 rounded-lg text-xs transition flex items-center">
+                           <i class="fa-solid fa-right-to-bracket mr-1.5 text-masonicGold"></i> Sign In to Propose a Visitation
+                       </button>`
+                    : '');
+
+            if (dayEvents.length === 0) {
+                detailEl.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h4 class="font-bold text-slate-200 text-sm">Date: ${ukDateStr}</h4>
+                        <div class="flex items-center space-x-2">
+                            ${proposeVisitationBtnHtml}
+                            <button onclick="selectedDetailDate = null; document.getElementById('calendar-day-detail').classList.add('hidden')" class="text-slate-400 hover:text-slate-100 p-1"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">No lodge meetings or functions scheduled for this date. ${currentUser && canUserProposeVisitation(currentUser) ? 'Click "Propose Visitation" above to publish an external lodge visit for Brethren to join.' : 'Sign in to propose an external visitation on this date.'}</p>
+                `;
+            } else {
+                let html = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
+                        <h4 class="cinzel-font font-bold text-masonicGold text-base">Events for ${ukDateStr}</h4>
+                        <div class="flex items-center space-x-2">
+                            ${proposeVisitationBtnHtml}
+                            <button onclick="selectedDetailDate = null; document.getElementById('calendar-day-detail').classList.add('hidden')" class="text-slate-400 hover:text-slate-100 p-1"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-4 mt-4">
+                `;
+
+                dayEvents.forEach(evt => {
+                    const allowsInterest = evt.type === 'social' || evt.type === 'visitation';
+                    const interestedList = memberVisitations.filter(v => v.eventId === evt.id);
+                    const isUserInterested = currentUser && interestedList.some(v => v.member === currentUser.name);
+
+                    let actionFooterHtml = '';
+                    if (allowsInterest) {
+                        const btnHtml = isUserInterested
+                            ? `<button onclick="expressInterest('${evt.id}')" class="bg-emerald-600/20 hover:bg-red-500/20 text-emerald-300 hover:text-red-300 border border-emerald-500/40 hover:border-red-500/40 font-semibold px-3 py-1.5 rounded-lg text-xs transition flex items-center group">
+                                   <i class="fa-solid fa-circle-check mr-1.5 group-hover:hidden"></i>
+                                   <i class="fa-solid fa-xmark mr-1.5 hidden group-hover:inline"></i>
+                                   <span class="group-hover:hidden">Interested ✓</span>
+                                   <span class="hidden group-hover:inline">Withdraw Interest</span>
+                               </button>`
+                            : `<button onclick="expressInterest('${evt.id}')" class="bg-masonicGold hover:bg-amber-400 text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-xs transition shadow flex items-center">
+                                   <i class="fa-solid fa-hand-holding-heart mr-1.5"></i> Show Interest in Attending
+                               </button>`;
+
+                        const namesPreview = interestedList.length > 0
+                            ? `${interestedList.length} ${interestedList.length === 1 ? 'Brother' : 'Brethren'} interested`
+                            : 'Be the first to register interest';
+
+                        actionFooterHtml = `
+                            <div class="pt-2 flex flex-wrap items-center justify-between gap-2">
+                                ${btnHtml}
+                                <span class="text-[11px] text-slate-400"><i class="fa-solid fa-users mr-1 text-masonicGold"></i>${namesPreview}</span>
+                            </div>
+                        `;
+                    } else {
+                        actionFooterHtml = `
+                            <div class="pt-2 flex items-center justify-between text-[11px] text-slate-400">
+                                <span><i class="fa-solid fa-scroll mr-1 text-masonicGold"></i>Regular Lodge Summons • RSVP via Secretary / Dining Steward</span>
+                            </div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded uppercase tracking-wider ${evt.type === 'meeting' ? 'bg-blue-600/20 text-blue-400' : evt.type === 'social' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}">${evt.type}</span>
+                                    ${evt.proposedBy ? `<span class="text-[11px] text-slate-400">Proposed by <strong class="text-slate-200">${evt.proposedBy}</strong></span>` : ''}
+                                </div>
+                                <span class="text-xs text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${evt.time}</span>
+                            </div>
+                            <h5 class="font-bold text-slate-100 text-sm">${evt.title}</h5>
+                            <p class="text-xs text-slate-300 leading-relaxed">${evt.description}</p>
+                            ${actionFooterHtml}
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                detailEl.innerHTML = html;
+            }
+            detailEl.classList.remove('hidden');
+        }
+
+        function filterEvents(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-chip').forEach(btn => {
+                btn.className = "filter-chip px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 transition";
+                if (btn.dataset.filter === type) {
+                    btn.className = "filter-chip px-3 py-1 rounded-lg bg-slate-700 text-slate-200 font-medium transition";
+                }
+            });
+            renderCalendarGrid();
+            renderEventsList();
+        }
+
+        function renderEventsList() {
+            const listGrid = document.getElementById('events-list-grid');
+            listGrid.innerHTML = '';
+
+            const sortedEvents = [...lodgeEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const filtered = sortedEvents.filter(e => currentFilter === 'all' || e.type === currentFilter);
+
+            filtered.forEach(evt => {
+                let badgeColor = 'bg-blue-600/20 text-blue-400 border-blue-500/30';
+                if (evt.type === 'social') badgeColor = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+                if (evt.type === 'visitation') badgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+
+                const allowsInterest = evt.type === 'social' || evt.type === 'visitation';
+                const interestedList = memberVisitations.filter(v => v.eventId === evt.id);
+                const isUserInterested = currentUser && interestedList.some(v => v.member === currentUser.name);
+
+                let footerActionHtml = '';
+                if (allowsInterest) {
+                    footerActionHtml = isUserInterested
+                        ? `<button onclick="expressInterest('${evt.id}')" class="bg-emerald-600/20 hover:bg-red-500/20 text-emerald-300 hover:text-red-300 border border-emerald-500/40 hover:border-red-500/40 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center group">
+                               <i class="fa-solid fa-circle-check mr-1.5 group-hover:hidden"></i>
+                               <i class="fa-solid fa-xmark mr-1.5 hidden group-hover:inline"></i>
+                               <span class="group-hover:hidden">Interested ✓</span>
+                               <span class="hidden group-hover:inline">Withdraw</span>
+                           </button>`
+                        : `<button onclick="expressInterest('${evt.id}')" class="bg-slate-700 hover:bg-masonicGold hover:text-slate-950 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center">
+                               <i class="fa-solid fa-hand-holding-heart mr-1.5"></i> Show Interest
+                           </button>`;
+                } else {
+                    footerActionHtml = `<span class="text-[11px] text-slate-400 font-medium"><i class="fa-solid fa-scroll mr-1 text-masonicGold"></i>Regular Summons</span>`;
+                }
+
+                const interestCountBadge = allowsInterest
+                    ? `<div class="text-[11px] text-slate-400 pt-1"><i class="fa-solid fa-users mr-1 text-masonicGold"></i>${interestedList.length} ${interestedList.length === 1 ? 'Brother' : 'Brethren'} interested</div>`
+                    : '';
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-800/70 border border-slate-700 p-5 rounded-2xl flex flex-col justify-between space-y-4 hover:border-masonicGold/50 transition";
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs px-2.5 py-1 rounded-full border uppercase tracking-wider font-medium ${badgeColor}">${evt.type}</span>
+                            <span class="text-xs text-slate-400 font-medium"><i class="fa-regular fa-calendar mr-1"></i>${formatUKDate(evt.date)}</span>
+                        </div>
+                        <h4 class="cinzel-font font-bold text-slate-100 text-base">${evt.title}</h4>
+                        ${evt.proposedBy ? `<div class="text-[11px] text-emerald-400"><i class="fa-solid fa-compass mr-1"></i>Proposed by ${evt.proposedBy}</div>` : ''}
+                        <p class="text-xs text-slate-300 leading-relaxed">${evt.description}</p>
+                        ${interestCountBadge}
+                    </div>
+                    <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between">
+                        <span class="text-xs text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${evt.time}</span>
+                        ${footerActionHtml}
+                    </div>
+                `;
+                listGrid.appendChild(card);
+            });
+        }
+
+        function openCreateEventModal(prefillDate = '', preferredType = '') {
+            const isOfficer = currentUser && ['senior_steward', 'social_sec', 'admin'].includes(currentUser.roleKey);
+            const canVisitation = canUserProposeVisitation(currentUser);
+
+            if (!currentUser || (!isOfficer && !canVisitation)) {
+                showModal("Access Denied", "You do not currently have permission to schedule events or propose visitations. Please contact the Lodge Secretary.", "error");
+                return;
+            }
+
+            const typeSelect = document.getElementById('new-evt-type');
+            const modalTitle = document.getElementById('create-modal-title');
+            let optionsHtml = '';
+
+            if (currentUser.roleKey === 'admin') {
+                optionsHtml += `<option value="meeting">Regular Meeting & Festive Board</option>`;
+                optionsHtml += `<option value="social">Social Function / White Table</option>`;
+                optionsHtml += `<option value="visitation">External Lodge Visitation</option>`;
+            } else if (currentUser.roleKey === 'senior_steward') {
+                optionsHtml += `<option value="meeting">Regular Meeting & Festive Board</option>`;
+                if (canVisitation) optionsHtml += `<option value="visitation">External Lodge Visitation</option>`;
+            } else if (currentUser.roleKey === 'social_sec') {
+                optionsHtml += `<option value="social">Social Function / White Table</option>`;
+                if (canVisitation) optionsHtml += `<option value="visitation">External Lodge Visitation</option>`;
+            } else if (canVisitation) {
+                optionsHtml += `<option value="visitation">External Lodge Visitation</option>`;
+            }
+
+            typeSelect.innerHTML = optionsHtml;
+            if (preferredType && Array.from(typeSelect.options).some(o => o.value === preferredType)) {
+                typeSelect.value = preferredType;
+            }
+
+            modalTitle.innerText = typeSelect.value === 'visitation' && !isOfficer
+                ? 'Propose External Lodge Visitation'
+                : 'Schedule New Lodge Event';
+
+            const dateInput = document.getElementById('new-evt-date');
+            if (prefillDate) {
+                dateInput.value = prefillDate;
+            }
+
+            document.getElementById('create-event-modal').classList.remove('hidden');
+        }
+
+        function closeCreateEventModal() {
+            document.getElementById('create-event-modal').classList.add('hidden');
+            document.getElementById('create-event-form').reset();
+        }
+
+        function handleCreateEventSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('new-evt-type').value;
+            const title = document.getElementById('new-evt-title').value;
+            const date = document.getElementById('new-evt-date').value;
+            const time = document.getElementById('new-evt-time').value;
+            const description = document.getElementById('new-evt-desc').value;
+
+            const newEvt = {
+                id: 'evt-' + Date.now(),
+                type,
+                title,
+                date,
+                time,
+                description,
+                proposedBy: type === 'visitation' && currentUser ? currentUser.name : null
+            };
+
+            lodgeEvents.push(newEvt);
+            closeCreateEventModal();
+            renderCalendarGrid();
+            renderEventsList();
+            populateVisitorMeetingDropdown();
+            if (selectedDetailDate === date) {
+                selectCalendarDay(date);
+            }
+            const ukDate = formatUKDate(date);
+            const msg = type === 'visitation'
+                ? `Your visitation "${title}" on ${ukDate} has been added to the Master Calendar. Brethren can now register interest to join.`
+                : `Successfully scheduled "${title}" (${ukDate}) on the Master Calendar.`;
+            showModal(type === 'visitation' ? "Visitation Published" : "Event Published", msg, "success");
+        }
+
+        function expressInterest(evtId) {
+            const evt = lodgeEvents.find(e => e.id === evtId);
+            if (!evt || (evt.type !== 'social' && evt.type !== 'visitation')) {
+                return;
+            }
+
+            if (!currentUser) {
+                showModal("Sign In Required", "Please sign in as a member to register your interest in attending this event or visitation.", "error");
+                openLoginModal('signin');
+                return;
+            }
+
+            const existingIndex = memberVisitations.findIndex(
+                v => v.eventId === evtId && v.member === currentUser.name
+            );
+
+            if (existingIndex > -1) {
+                memberVisitations.splice(existingIndex, 1);
+                showModal("Interest Withdrawn", `You have withdrawn your interest from "${evt.title}".`, "success");
+            } else {
+                memberVisitations.push({
+                    eventId: evt.id,
+                    member: currentUser.name,
+                    eventTitle: evt.title,
+                    eventType: evt.type,
+                    date: evt.date
+                });
+                const coordinator = evt.type === 'social' ? 'Social Secretary' : 'Lodge Secretary';
+                showModal("Interest Registered", `Your interest in attending "${evt.title}" has been recorded in your profile and sent to the ${coordinator} to coordinate numbers.`, "success");
+            }
+
+            renderEventsList();
+            renderCalendarGrid();
+            if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
+            renderInterestRegisters();
+        }
+
+        function renderInterestRegisters() {
+            const profileListEl = document.getElementById('profile-interests-list');
+            const profileCountEl = document.getElementById('profile-interest-count');
+
+            if (profileListEl && profileCountEl) {
+                if (!currentUser) {
+                    profileListEl.innerHTML = '';
+                    profileCountEl.innerText = '0 Events';
+                } else {
+                    const userInterests = memberVisitations.filter(v => v.member === currentUser.name);
+                    profileCountEl.innerText = `${userInterests.length} ${userInterests.length === 1 ? 'Event' : 'Events'}`;
+
+                    if (userInterests.length === 0) {
+                        profileListEl.innerHTML = `
+                            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-xs text-slate-400 text-center">
+                                You have not registered interest in any upcoming social functions or external visitations yet.
+                            </div>
+                        `;
+                    } else {
+                        profileListEl.innerHTML = userInterests.map(item => `
+                            <div class="bg-slate-900/80 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-[10px] px-2 py-0.5 rounded uppercase font-semibold ${item.eventType === 'social' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}">${item.eventType}</span>
+                                        <span class="text-xs text-slate-400"><i class="fa-regular fa-calendar mr-1"></i>${formatUKDate(item.date)}</span>
+                                    </div>
+                                    <div class="font-semibold text-sm text-slate-100 mt-1">${item.eventTitle}</div>
+                                </div>
+                                <button onclick="expressInterest('${item.eventId}')" class="bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-300 border border-slate-700 hover:border-red-500/40 px-3 py-1.5 rounded-lg text-xs font-medium transition self-start sm:self-auto">
+                                    <i class="fa-solid fa-xmark mr-1"></i> Cancel Interest
+                                </button>
+                            </div>
+                        `).join('');
+                    }
+                }
+            }
+
+            const adminTbodyEl = document.getElementById('admin-interests-tbody');
+            const adminTotalEl = document.getElementById('admin-interest-total');
+
+            if (adminTbodyEl && adminTotalEl) {
+                adminTotalEl.innerText = `${memberVisitations.length} ${memberVisitations.length === 1 ? 'Registration' : 'Registrations'}`;
+
+                if (memberVisitations.length === 0) {
+                    adminTbodyEl.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="py-6 text-center text-slate-400">No members have registered interest in upcoming social events or visitations yet.</td>
+                        </tr>
+                    `;
+                } else {
+                    const sortedInterests = [...memberVisitations].sort((a, b) => new Date(a.date) - new Date(b.date));
+                    adminTbodyEl.innerHTML = sortedInterests.map(item => `
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <td class="py-3 px-3 font-semibold text-slate-100">${item.member}</td>
+                            <td class="py-3 px-3 text-slate-200">${item.eventTitle}</td>
+                            <td class="py-3 px-3">
+                                <span class="text-[10px] px-2 py-0.5 rounded uppercase font-semibold ${item.eventType === 'social' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}">${item.eventType}</span>
+                            </td>
+                            <td class="py-3 px-3 text-slate-400">${formatUKDate(item.date)}</td>
+                            <td class="py-3 px-3 text-right">
+                                <button onclick="removeInterestRecord('${item.eventId}', '${item.member.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-red-400 transition px-2 py-1" title="Remove entry">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        }
+
+        function removeInterestRecord(eventId, memberName) {
+            const idx = memberVisitations.findIndex(v => v.eventId === eventId && v.member === memberName);
+            if (idx > -1) {
+                memberVisitations.splice(idx, 1);
+                renderEventsList();
+                renderCalendarGrid();
+                if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
+                renderInterestRegisters();
+                showModal("Entry Removed", `Removed ${memberName}'s interest registration from the register.`, "success");
+            }
+        }
+
+        function populateVisitorMeetingDropdown() {
+            const select = document.getElementById('vis-meeting-select');
+            select.innerHTML = '';
+            const meetings = lodgeEvents.filter(e => e.type === 'meeting');
+            meetings.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.title;
+                opt.innerText = `${formatUKDate(m.date)} - ${m.title}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function submitVisitorRegistration(e) {
+            e.preventDefault();
+            const name = document.getElementById('vis-name').value;
+            const lodge = document.getElementById('vis-lodge').value;
+            const meeting = document.getElementById('vis-meeting-select').value;
+
+            showModal("Registration Received", `Thank you ${name} (${lodge}). Your visitor registration for "${meeting}" has been submitted to the Lodge Secretary for verification.`, "success");
+            document.getElementById('visitor-registration-form').reset();
+        }
+
+        function saveUserProfile(e) {
+            e.preventDefault();
+            const oldName = currentUser.name;
+            const name = document.getElementById('prof-name').value;
+            const rank = document.getElementById('prof-rank').value;
+            const email = document.getElementById('prof-email').value;
+            const cert = document.getElementById('prof-cert').value;
+            const dietary = document.getElementById('prof-dietary').value;
+
+            currentUser.name = name;
+            currentUser.roleTitle = rank;
+            currentUser.email = email;
+            currentUser.cert = cert;
+            currentUser.dietary = dietary;
+
+            const memberIdx = lodgeMembers.findIndex(m => m.id === currentUser.id);
+            if (memberIdx > -1) {
+                lodgeMembers[memberIdx] = { ...lodgeMembers[memberIdx], name, roleTitle: rank, email, cert, dietary };
+            }
+
+            memberVisitations.forEach(v => {
+                if (v.member === oldName) v.member = name;
+            });
+
+            renderPortal();
+            renderLoginRoleList();
+            renderInterestRegisters();
+            renderMemberDirectory();
+            showModal("Profile Updated", "Your member profile details have been saved successfully.", "success");
+        }
+
+        function renderMemberDirectory() {
+            const tbody = document.getElementById('admin-members-tbody');
+            const countBadge = document.getElementById('admin-member-count');
+            if (!tbody || !countBadge) return;
+
+            countBadge.innerText = `${lodgeMembers.length} ${lodgeMembers.length === 1 ? 'Member' : 'Members'}`;
+
+            const roleLabels = {
+                master_mason: { label: 'Standard Member', badge: 'bg-slate-800 text-slate-300 border-slate-700' },
+                senior_steward: { label: 'Senior Steward', badge: 'bg-blue-600/20 text-blue-300 border-blue-500/30' },
+                social_sec: { label: 'Social Secretary', badge: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+                admin: { label: 'Secretary / Admin', badge: 'bg-red-500/20 text-red-300 border-red-500/30' }
+            };
+
+            tbody.innerHTML = lodgeMembers.map(m => {
+                const roleMeta = roleLabels[m.roleKey] || roleLabels.master_mason;
+                const hasVisitationPerm = canUserProposeVisitation(m);
+                const visBadge = hasVisitationPerm
+                    ? `<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">Allowed</span>`
+                    : `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 font-medium">Restricted</span>`;
+                return `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3 px-3 font-semibold text-slate-100">${m.name}</td>
+                        <td class="py-3 px-3 text-slate-300">${m.roleTitle}</td>
+                        <td class="py-3 px-3">
+                            <span class="text-[10px] px-2 py-0.5 rounded border font-semibold ${roleMeta.badge}">${roleMeta.label}</span>
+                        </td>
+                        <td class="py-3 px-3">${visBadge}</td>
+                        <td class="py-3 px-3 text-slate-400">
+                            <div>${m.email || '—'}</div>
+                            <div class="text-[11px] text-slate-500">${m.cert || 'No Cert Recorded'}</div>
+                        </td>
+                        <td class="py-3 px-3 text-slate-300">${m.dietary || 'None'}</td>
+                        <td class="py-3 px-3 text-right">
+                            <button onclick="openEditMemberModal('${m.id}')" class="bg-slate-800 hover:bg-masonicGold hover:text-slate-950 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition inline-flex items-center">
+                                <i class="fa-solid fa-pen-to-square mr-1.5"></i> Edit
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openEditMemberModal(memberId) {
+            if (!currentUser || currentUser.roleKey !== 'admin') {
+                showModal("Restricted Action", "Only the Lodge Secretary / Admin has permission to edit member records.", "error");
+                return;
+            }
+            const member = lodgeMembers.find(m => m.id === memberId);
+            if (!member) return;
+
+            document.getElementById('edit-mem-id').value = member.id;
+            document.getElementById('edit-mem-name').value = member.name;
+            document.getElementById('edit-mem-rank').value = member.roleTitle;
+            document.getElementById('edit-mem-role').value = member.roleKey;
+            document.getElementById('edit-mem-cert').value = member.cert || '';
+            document.getElementById('edit-mem-email').value = member.email || '';
+            document.getElementById('edit-mem-dietary').value = member.dietary || '';
+            document.getElementById('edit-mem-can-visitation').checked = Boolean(member.canProposeVisitation);
+
+            document.getElementById('edit-member-modal').classList.remove('hidden');
+        }
+
+        function closeEditMemberModal() {
+            document.getElementById('edit-member-modal').classList.add('hidden');
+            document.getElementById('edit-member-form').reset();
+        }
+
+        function saveEditedMember(e) {
+            e.preventDefault();
+            if (!currentUser || currentUser.roleKey !== 'admin') return;
+
+            const id = document.getElementById('edit-mem-id').value;
+            const memberIdx = lodgeMembers.findIndex(m => m.id === id);
+            if (memberIdx === -1) return;
+
+            const oldName = lodgeMembers[memberIdx].name;
+            const updatedMember = {
+                ...lodgeMembers[memberIdx],
+                name: document.getElementById('edit-mem-name').value.trim(),
+                roleTitle: document.getElementById('edit-mem-rank').value.trim(),
+                roleKey: document.getElementById('edit-mem-role').value,
+                cert: document.getElementById('edit-mem-cert').value.trim(),
+                email: document.getElementById('edit-mem-email').value.trim(),
+                dietary: document.getElementById('edit-mem-dietary').value.trim(),
+                canProposeVisitation: document.getElementById('edit-mem-can-visitation').checked
+            };
+
+            lodgeMembers[memberIdx] = updatedMember;
+
+            if (oldName !== updatedMember.name) {
+                memberVisitations.forEach(v => {
+                    if (v.member === oldName) v.member = updatedMember.name;
+                });
+            }
+
+            if (currentUser.id === updatedMember.id) {
+                currentUser = { ...updatedMember };
+            }
+
+            closeEditMemberModal();
+            renderPortal();
+            renderLoginRoleList();
+            renderMemberDirectory();
+            renderInterestRegisters();
+            showModal("Member Record Updated", `Saved updated Lodge register details for ${updatedMember.name}.`, "success");
+        }
+
+        function saveLodgeSettings(e) {
+            e.preventDefault();
+            lodgeSettings.name = document.getElementById('setting-lodge-name').value;
+            lodgeSettings.subtitle = document.getElementById('setting-lodge-subtitle').value;
+            lodgeSettings.footerText = document.getElementById('setting-footer-text').value;
+            lodgeSettings.secEmail = document.getElementById('setting-sec-email').value;
+
+            document.getElementById('brand-lodge-name').innerText = lodgeSettings.name;
+            document.getElementById('brand-lodge-subtitle').innerText = lodgeSettings.subtitle;
+            document.getElementById('footer-text-display').innerText = lodgeSettings.footerText;
+
+            showModal("OEM Settings Saved", "Lodge branding and footer details have been updated across the portal.", "success");
+        }
+
+        function showModal(title, message, type = 'success') {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            const iconEl = document.getElementById('modal-icon');
+            if (type === 'success') {
+                iconEl.className = "w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mx-auto flex items-center justify-center text-xl";
+                iconEl.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                iconEl.className = "w-12 h-12 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 mx-auto flex items-center justify-center text-xl";
+                iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+            document.getElementById('notification-modal').classList.remove('hidden');
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
