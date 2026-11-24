@@ -119,6 +119,10 @@
                             <i class="fa-solid fa-list mr-1"></i> Tile List
                         </button>
                     </div>
+                    <!-- Live Cloud Sync Button (Visible when Google Sheet Web App URLs are configured) -->
+                    <button onclick="pullAllFromGoogleSheets(true)" id="header-cloud-sync-btn" class="hidden bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center" title="Pull latest bookings & Permanent Dining List from Google Sheets">
+                        <i class="fa-solid fa-rotate mr-1.5"></i> Sync Live Data
+                    </button>
                     <!-- Create Event Button (Visible to authorised Officers & Members) -->
                     <button onclick="openCreateEventModal()" id="quick-create-event-btn" class="hidden bg-masonicGold hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-semibold transition shadow flex items-center">
                         <i class="fa-solid fa-plus mr-1.5"></i> Add New Event
@@ -306,7 +310,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <div class="text-xs font-semibold text-slate-200">Standing Festive Board Subscription</div>
-                                <div class="text-[11px] text-slate-400">Joining the Permanent Dining List automatically emails confirmation to you and the Dining Steward / Secretary.</div>
+                                <div class="text-[11px] text-slate-400">Joining the Permanent Dining List automatically emails confirmation to you and the Dining Steward (dining@staugustinelodge.org.uk).</div>
                             </div>
                             <label class="inline-flex items-center space-x-2.5 cursor-pointer bg-slate-800 border border-slate-700 px-3.5 py-2 rounded-xl">
                                 <input type="checkbox" id="prof-perm-dining-active" onchange="togglePermanentDiningEnrollment(this.checked)" class="w-4 h-4 accent-amber-400 rounded cursor-pointer">
@@ -423,92 +427,150 @@
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                         <div>
                             <h3 class="font-semibold text-slate-100 text-base flex items-center">
-                                <i class="fa-solid fa-table text-emerald-400 mr-2"></i> Google Sheets Webhook Integration & Apps Scripts
+                                <i class="fa-solid fa-table text-emerald-400 mr-2"></i> Google Sheets Two-Way Sync & Apps Scripts (<code>doGet</code> + <code>doPost</code>)
                             </h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Connect two separate Google Sheets Web App URLs—one for <strong>Meetings & Permanent Dining List</strong> (with automated confirmation emails) and another for <strong>Social Events & Visitations</strong>.</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Connect two separate Google Sheets Web App URLs so bookings, Permanent Dining List statuses, and single-meeting pauses sync across all Brethren's devices in real time.</p>
                         </div>
-                        <span class="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold px-3 py-1 rounded-full self-start sm:self-auto">
-                            2 Separate Scripts
-                        </span>
+                        <div class="flex items-center space-x-2 self-start sm:self-auto">
+                            <button type="button" onclick="pullAllFromGoogleSheets(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3 py-1 rounded-full text-[11px] transition flex items-center shadow">
+                                <i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Pull Live Data Now
+                            </button>
+                            <span id="gsheet-last-sync-badge" class="bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-medium px-2.5 py-1 rounded-full">
+                                Local Cache
+                            </span>
+                        </div>
                     </div>
 
                     <form onsubmit="saveGoogleSheetWebhooks(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div id="gsheet-meetings-url-box">
                             <div class="flex items-center justify-between mb-1.5">
-                                <label class="block text-xs font-medium text-blue-300">1. Meetings & Perm List Web App URL</label>
+                                <label class="block text-xs font-medium text-blue-300">1. Meetings & Perm List Web App URL (CCs dining@)</label>
                                 <button type="button" onclick="testGoogleSheetWebhook('meetings')" class="text-[11px] text-emerald-400 hover:underline font-medium">Test Ping</button>
                             </div>
                             <input type="url" id="setting-gsheet-meetings-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-masonicGold">
                         </div>
                         <div id="gsheet-social-url-box">
                             <div class="flex items-center justify-between mb-1.5">
-                                <label class="block text-xs font-medium text-amber-300">2. Social Events & Visitations Web App URL</label>
+                                <label class="block text-xs font-medium text-amber-300">2. Social Events & Visitations Web App URL (CCs social@)</label>
                                 <button type="button" onclick="testGoogleSheetWebhook('social')" class="text-[11px] text-emerald-400 hover:underline font-medium">Test Ping</button>
                             </div>
                             <input type="url" id="setting-gsheet-social-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-masonicGold">
                         </div>
                         <div class="md:col-span-2 flex justify-end">
                             <button type="submit" class="bg-masonicGold hover:bg-amber-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs transition shadow">
-                                Save Google Sheet URLs
+                                Save Google Sheet URLs & Pull Sync
                             </button>
                         </div>
                     </form>
 
-                    <!-- Two Copyable Google Apps Scripts -->
+                    <!-- Two Copyable Google Apps Scripts (With Two-Way doGet + doPost & Automated Emails) -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
                         <!-- Script 1: Meetings & Permanent Dining List -->
                         <div id="gsheet-script-meetings-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2.5 flex flex-col justify-between">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-blue-400"><i class="fa-solid fa-code mr-1.5"></i>Script 1: Meetings & Perm List</span>
+                                <span class="text-xs font-bold text-blue-400"><i class="fa-solid fa-code mr-1.5"></i>Script 1: Meetings & Perm List (CC: dining@)</span>
                                 <button type="button" onclick="copyAppsScript('gsheet-script-meetings')" class="bg-slate-800 hover:bg-masonicGold hover:text-slate-950 text-slate-200 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition">
                                     <i class="fa-regular fa-copy mr-1"></i> Copy Script
                                 </button>
                             </div>
-                            <p class="text-[11px] text-slate-400">Creates <code>Meeting_RSVPs_Guests</code> and <code>Permanent_Dining_List</code> tabs and automatically sends a confirmation email whenever a Brother joins or leaves the Perm List.</p>
-                            <textarea id="gsheet-script-meetings" readonly rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 font-mono text-[10px] text-emerald-300 focus:outline-none">function doPost(e) {
+                            <p class="text-[11px] text-slate-400">Includes <code>doGet(e)</code> & <code>doPost(e)</code>, syncs Perm List & Meeting RSVPs, and sends confirmation emails CC'd to <strong>dining@staugustinelodge.org.uk</strong>.</p>
+                            <textarea id="gsheet-script-meetings" readonly rows="12" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 font-mono text-[10px] text-emerald-300 focus:outline-none">function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var permSheet = ss.getSheetByName('Permanent_Dining_List');
+  var rsvpSheet = ss.getSheetByName('Meeting_RSVPs_Guests');
+  var permRows = permSheet && permSheet.getLastRow() > 1 ? permSheet.getDataRange().getValues().slice(1) : [];
+  var rsvpRows = rsvpSheet && rsvpSheet.getLastRow() > 1 ? rsvpSheet.getDataRange().getValues().slice(1) : [];
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'success',
+    permRows: permRows,
+    rsvpRows: rsvpRows
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var data = JSON.parse(e.postData.contents);
+  var diningCc = data.diningEmail || 'dining@staugustinelodge.org.uk';
+  var permSheet = ss.getSheetByName('Permanent_Dining_List') || ss.insertSheet('Permanent_Dining_List');
+  if (permSheet.getLastRow() === 0) {
+    permSheet.appendRow(['Updated At (UK)', 'Member ID', 'Full Name', 'Rank', 'Perm Status', 'Paused Meeting IDs', 'Dietary Requirements']);
+  }
 
-  if (data.action === 'perm_list_enrollment') {
-    var logSheet = ss.getSheetByName('Perm_List_Changes') || ss.insertSheet('Perm_List_Changes');
-    if (logSheet.getLastRow() === 0) {
-      logSheet.appendRow(['Timestamp (UK)', 'Action', 'Title', 'First Name', 'Last Name', 'Rank', 'Email', 'Dietary Requirements']);
+  if (data.action === 'perm_list_enrollment' || data.action === 'perm_meeting_pause') {
+    var rows = permSheet.getDataRange().getValues();
+    var foundRow = -1;
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][1] === data.memberId || rows[i][2] === data.fullName) {
+        foundRow = i + 1;
+        break;
+      }
     }
-    logSheet.appendRow([data.timestamp, data.statusLabel, data.title, data.firstName, data.lastName, data.rank, data.memberEmail, data.dietary]);
+    var rowValues = [data.timestamp, data.memberId || '', data.fullName, data.rank || '', data.enrolled ? 'Active' : 'Opted Out', (data.pausedMeetingIds || []).join(','), data.dietary || 'None'];
+    if (foundRow > -1) {
+      permSheet.getRange(foundRow, 1, 1, rowValues.length).setValues([rowValues]);
+    } else {
+      permSheet.appendRow(rowValues);
+    }
 
-    if (data.memberEmail) {
-      var subject = data.enrolled
-        ? 'Confirmation: Enrolled on Permanent Dining List - ' + data.lodgeName
-        : 'Confirmation: Removed from Permanent Dining List - ' + data.lodgeName;
-      var body = 'Dear ' + data.fullName + ',\n\n' +
-        (data.enrolled
-          ? 'This email confirms that you have joined the Permanent Dining List for ' + data.lodgeName + '.\n\nYou will automatically be booked in for the Festive Board at all Regular Meetings unless you pause a single meeting in your portal profile.\n\nRecorded Dietary Requirements: ' + data.dietary
-          : 'This email confirms that you have been removed from the standing Permanent Dining List for ' + data.lodgeName + '.') +
-        '\n\nFraternal regards,\nLodge Secretary & Dining Steward\n' + data.lodgeName;
-      MailApp.sendEmail({
-        to: data.memberEmail,
-        cc: data.secretaryEmail || '',
-        subject: subject,
-        body: body
-      });
+    if (data.action === 'perm_list_enrollment') {
+      var logSheet = ss.getSheetByName('Perm_List_Changes') || ss.insertSheet('Perm_List_Changes');
+      if (logSheet.getLastRow() === 0) {
+        logSheet.appendRow(['Timestamp (UK)', 'Action', 'Title', 'First Name', 'Last Name', 'Rank', 'Email', 'Dietary Requirements']);
+      }
+      logSheet.appendRow([data.timestamp, data.statusLabel, data.title, data.firstName, data.lastName, data.rank, data.memberEmail, data.dietary]);
+
+      if (data.memberEmail) {
+        var subject = data.enrolled
+          ? 'Confirmation: Enrolled on Permanent Dining List - ' + data.lodgeName
+          : 'Confirmation: Removed from Permanent Dining List - ' + data.lodgeName;
+        var body = 'Dear ' + data.fullName + ',\n\n' +
+          (data.enrolled
+            ? 'This email confirms that you have joined the Permanent Dining List for ' + data.lodgeName + '.\n\nYou will automatically be booked in for the Festive Board at all Regular Meetings unless you pause a single meeting in your portal profile.\n\nRecorded Dietary Requirements: ' + data.dietary
+            : 'This email confirms that you have been removed from the standing Permanent Dining List for ' + data.lodgeName + '.') +
+          '\n\nFraternal regards,\nDining Steward\n' + data.lodgeName;
+        MailApp.sendEmail({
+          to: data.memberEmail,
+          cc: diningCc,
+          subject: subject,
+          body: body
+        });
+      }
     }
   } else if (data.action === 'perm_list_sync') {
-    var permSheet = ss.getSheetByName('Permanent_Dining_List') || ss.insertSheet('Permanent_Dining_List');
     permSheet.clearContents();
-    permSheet.appendRow(['Synced At (UK)', 'Meeting', 'Title', 'First Name', 'Last Name', 'Rank', 'Perm Status', 'Meeting Status', 'Dietary Requirements']);
+    permSheet.appendRow(['Updated At (UK)', 'Member ID', 'Full Name', 'Rank', 'Perm Status', 'Paused Meeting IDs', 'Dietary Requirements']);
     data.rows.forEach(function(r) {
-      permSheet.appendRow([data.timestamp, data.meetingTitle, r.title, r.firstName, r.lastName, r.rank, r.permStatus, r.meetingStatus, r.dietary]);
+      permSheet.appendRow([data.timestamp, r.memberId || '', r.fullName, r.rank, r.permStatus, (r.pausedMeetingIds || []).join(','), r.dietary]);
     });
   } else {
     var rsvpSheet = ss.getSheetByName('Meeting_RSVPs_Guests') || ss.insertSheet('Meeting_RSVPs_Guests');
     if (rsvpSheet.getLastRow() === 0) {
-      rsvpSheet.appendRow(['Submitted At (UK)', 'Record Type', 'Meeting Date', 'Meeting Title', 'Title', 'First Name', 'Last Name', 'Lodge / Host', 'Constitution', 'Dining Option', 'Dietary Requirements']);
+      rsvpSheet.appendRow(['Submitted At (UK)', 'Booking ID', 'Record Type', 'Meeting ID', 'Meeting Date', 'Meeting Title', 'Title', 'First Name', 'Last Name', 'Lodge / Host', 'Constitution', 'Dining Option', 'Dietary Requirements']);
     }
     rsvpSheet.appendRow([
-      data.timestamp, data.recordType, data.meetingDate, data.meetingTitle,
-      data.title, data.firstName, data.lastName, data.lodgeOrHost,
+      data.timestamp, data.bookingId || ('bk-' + new Date().getTime()), data.recordType, data.meetingId || '',
+      data.meetingDate, data.meetingTitle, data.title, data.firstName, data.lastName, data.lodgeOrHost,
       data.constitution || 'UGLE', data.diningOption, data.dietary
     ]);
+
+    if (data.recipientEmail && data.recordType !== 'Connection Test') {
+      var mSubject = 'Dining & Meeting Booking Confirmation: ' + data.meetingTitle + ' (' + data.meetingDate + ')';
+      var mBody = 'Dear ' + (data.recipientName || (data.title + ' ' + data.firstName + ' ' + data.lastName)) + ',\n\n' +
+        'Thank you for submitting your Meeting & Dining details for ' + (data.lodgeName || 'St. Augustine Lodge No. 972') + '.\n\n' +
+        'Booking Details:\n' +
+        '• Attendee: ' + data.title + ' ' + data.firstName + ' ' + data.lastName + ' (' + data.recordType + ')\n' +
+        '• Meeting: ' + data.meetingTitle + ' (' + data.meetingDate + ')\n' +
+        '• Lodge / Host: ' + data.lodgeOrHost + '\n' +
+        '• Dining Option: ' + data.diningOption + '\n' +
+        '• Dietary Requirements: ' + (data.dietary || 'None') + '\n\n' +
+        'Fraternal regards,\nDining Steward\n' + (data.lodgeName || 'St. Augustine Lodge No. 972');
+      MailApp.sendEmail({
+        to: data.recipientEmail,
+        cc: diningCc,
+        subject: mSubject,
+        body: mBody
+      });
+    }
   }
   return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
 }</textarea>
@@ -517,24 +579,53 @@
                         <!-- Script 2: Social Events & Visitations -->
                         <div id="gsheet-script-social-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2.5 flex flex-col justify-between">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-amber-400"><i class="fa-solid fa-code mr-1.5"></i>Script 2: Social Events & Visitations</span>
+                                <span class="text-xs font-bold text-amber-400"><i class="fa-solid fa-code mr-1.5"></i>Script 2: Social & Visitations (CC: social@)</span>
                                 <button type="button" onclick="copyAppsScript('gsheet-script-social')" class="bg-slate-800 hover:bg-masonicGold hover:text-slate-950 text-slate-200 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition">
                                     <i class="fa-regular fa-copy mr-1"></i> Copy Script
                                 </button>
                             </div>
-                            <p class="text-[11px] text-slate-400">Logs Social Function & Visitation registrations and guest additions into <code>Social_Visitation_Register</code> with split name columns.</p>
-                            <textarea id="gsheet-script-social" readonly rows="10" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 font-mono text-[10px] text-amber-300 focus:outline-none">function doPost(e) {
+                            <p class="text-[11px] text-slate-400">Includes <code>doGet(e)</code> & <code>doPost(e)</code>, syncs Social/Visitation registrations & guests, and emails confirmation CC'd to <strong>social@staugustinelodge.org.uk</strong>.</p>
+                            <textarea id="gsheet-script-social" readonly rows="12" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 font-mono text-[10px] text-amber-300 focus:outline-none">function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Social_Visitation_Register');
+  var rows = sheet && sheet.getLastRow() > 1 ? sheet.getDataRange().getValues().slice(1) : [];
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'success',
+    rows: rows
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var data = JSON.parse(e.postData.contents);
+  var socialCc = data.socialEmail || 'social@staugustinelodge.org.uk';
   var sheet = ss.getSheetByName('Social_Visitation_Register') || ss.insertSheet('Social_Visitation_Register');
 
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Submitted At (UK)', 'Action', 'Category', 'Event Date', 'Event Title', 'Title', 'First Name', 'Last Name', 'Host / Member', 'Dietary Requirements']);
+    sheet.appendRow(['Submitted At (UK)', 'Action', 'Event ID', 'Category', 'Event Date', 'Event Title', 'Title', 'First Name', 'Last Name', 'Host / Member', 'Dietary Requirements', 'Member Email']);
   }
   sheet.appendRow([
-    data.timestamp, data.action, data.eventType, data.eventDate, data.eventTitle,
-    data.title, data.firstName, data.lastName, data.hostMember, data.dietary
+    data.timestamp, data.action, data.eventId || '', data.eventType, data.eventDate, data.eventTitle,
+    data.title, data.firstName, data.lastName, data.hostMember, data.dietary, data.memberEmail || ''
   ]);
+
+  if (data.memberEmail && data.action !== 'Connection Test') {
+    var sSubject = data.action + ': ' + data.eventTitle + ' (' + data.eventDate + ')';
+    var sBody = 'Dear ' + data.hostMember + ',\n\n' +
+      'This email confirms your submission for ' + (data.lodgeName || 'St. Augustine Lodge No. 972') + ':\n\n' +
+      '• Action: ' + data.action + '\n' +
+      '• Event / Visitation: ' + data.eventTitle + ' (' + data.eventDate + ')\n' +
+      '• Attendee: ' + data.title + ' ' + data.firstName + ' ' + data.lastName + '\n' +
+      '• Dietary Requirements: ' + (data.dietary || 'None') + '\n\n' +
+      'Fraternal regards,\nSocial Secretary\n' + (data.lodgeName || 'St. Augustine Lodge No. 972');
+    MailApp.sendEmail({
+      to: data.memberEmail,
+      cc: socialCc,
+      subject: sSubject,
+      body: sBody
+    });
+  }
+
   return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
 }</textarea>
                         </div>
@@ -605,6 +696,17 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-300 mb-2">Secretary Contact Email</label>
                             <input type="email" id="setting-sec-email" value="secretary@staugustine972.org.uk" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Dining Steward CC Email (Meetings & Perm List)</label>
+                            <input type="email" id="setting-dining-email" value="dining@staugustinelodge.org.uk" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Social Secretary CC Email (Social & Visitations)</label>
+                            <input type="email" id="setting-social-email" value="social@staugustinelodge.org.uk" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-masonicGold">
                         </div>
                     </div>
 
@@ -1084,6 +1186,8 @@
             subtitle: "United Grand Lodge of England",
             footerText: "St. Augustine Lodge No. 972. Meeting regularly at the Masonic Hall.",
             secEmail: "secretary@staugustine972.org.uk",
+            diningEmail: "dining@staugustinelodge.org.uk",
+            socialEmail: "social@staugustinelodge.org.uk",
             visitationPolicy: "all_members", // 'all_members' or 'approved_only'
             gsheetMeetingsUrl: "",
             gsheetSocialUrl: ""
@@ -1299,8 +1403,12 @@
             document.getElementById('footer-text-display').innerText = lodgeSettings.footerText;
             const gMeetInput = document.getElementById('setting-gsheet-meetings-url');
             const gSocInput = document.getElementById('setting-gsheet-social-url');
+            const diningEmailInput = document.getElementById('setting-dining-email');
+            const socialEmailInput = document.getElementById('setting-social-email');
             if (gMeetInput) gMeetInput.value = lodgeSettings.gsheetMeetingsUrl || '';
             if (gSocInput) gSocInput.value = lodgeSettings.gsheetSocialUrl || '';
+            if (diningEmailInput) diningEmailInput.value = lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
+            if (socialEmailInput) socialEmailInput.value = lodgeSettings.socialEmail || 'social@staugustinelodge.org.uk';
 
             renderLoginRoleList();
             renderPortal();
@@ -1311,6 +1419,11 @@
             renderMemberDirectory();
             renderPendingApplications();
             renderPermanentDiningList();
+
+            // Automatically pull live two-way sync data from Google Sheets on page load if URLs are configured
+            if (lodgeSettings.gsheetMeetingsUrl || lodgeSettings.gsheetSocialUrl) {
+                pullAllFromGoogleSheets(false);
+            }
         };
 
         // Tab Switching & Authentication Enforcement
@@ -1571,6 +1684,12 @@
             const permDiningSection = document.getElementById('admin-perm-dining-section');
             const googleSheetsSection = document.getElementById('admin-google-sheets-section');
             const interestRegisterSection = document.getElementById('admin-interest-register-section');
+            const headerSyncBtn = document.getElementById('header-cloud-sync-btn');
+
+            if (headerSyncBtn) {
+                const hasUrls = Boolean(lodgeSettings.gsheetMeetingsUrl || lodgeSettings.gsheetSocialUrl);
+                headerSyncBtn.classList.toggle('hidden', !hasUrls);
+            }
 
             if (currentUser) {
                 unloggedDiv.classList.add('hidden');
@@ -2034,9 +2153,40 @@
                 v => v.eventId === evtId && v.member === currentUser.name
             );
 
+            const parsedHost = splitMasonicName(currentUser.name);
+            const socialCc = lodgeSettings.socialEmail || 'social@staugustinelodge.org.uk';
+            const memberEmail = currentUser.email || socialCc;
+
             if (existingIndex > -1) {
                 memberVisitations.splice(existingIndex, 1);
-                showModal("Interest Withdrawn", `You have withdrawn your interest from "${evt.title}".`, "success");
+                postToGoogleSheet(lodgeSettings.gsheetSocialUrl, {
+                    timestamp: getUKTimestamp(),
+                    action: 'Interest Withdrawn',
+                    lodgeName: lodgeSettings.name,
+                    eventId: evt.id,
+                    eventType: evt.type,
+                    eventDate: formatUKDate(evt.date),
+                    eventTitle: evt.title,
+                    title: parsedHost.title,
+                    firstName: parsedHost.firstName,
+                    lastName: parsedHost.lastName,
+                    hostMember: currentUser.name,
+                    memberEmail: currentUser.email || '',
+                    socialEmail: socialCc,
+                    dietary: currentUser.dietary || 'None'
+                });
+                const mailtoUrl = buildConfirmationMailto(
+                    memberEmail,
+                    socialCc,
+                    `Interest Withdrawn: ${evt.title} (${formatUKDate(evt.date)})`,
+                    `Dear ${currentUser.name},\n\nThis confirms that you have withdrawn your interest from "${evt.title}" on ${formatUKDate(evt.date)}.\n\nFraternal regards,\nSocial Secretary\n${lodgeSettings.name}`
+                );
+                showModal(
+                    "Interest Withdrawn",
+                    `You have withdrawn your interest from "${evt.title}". A confirmation email has been triggered to ${memberEmail} (cc: ${socialCc}).`,
+                    "success",
+                    `<a href="${mailtoUrl}" class="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 text-masonicGold border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs transition"><i class="fa-solid fa-envelope mr-1.5"></i> Open Email Copy in Mail Client</a>`
+                );
             } else {
                 memberVisitations.push({
                     eventId: evt.id,
@@ -2045,11 +2195,11 @@
                     eventType: evt.type,
                     date: evt.date
                 });
-                const coordinator = evt.type === 'social' ? 'Social Secretary' : 'Lodge Secretary';
-                const parsedHost = splitMasonicName(currentUser.name);
                 postToGoogleSheet(lodgeSettings.gsheetSocialUrl, {
                     timestamp: getUKTimestamp(),
                     action: 'Interest Registered',
+                    lodgeName: lodgeSettings.name,
+                    eventId: evt.id,
                     eventType: evt.type,
                     eventDate: formatUKDate(evt.date),
                     eventTitle: evt.title,
@@ -2057,9 +2207,22 @@
                     firstName: parsedHost.firstName,
                     lastName: parsedHost.lastName,
                     hostMember: currentUser.name,
+                    memberEmail: currentUser.email || '',
+                    socialEmail: socialCc,
                     dietary: currentUser.dietary || 'None'
                 });
-                showModal("Interest Registered", `Your interest in attending "${evt.title}" has been recorded in your profile and sent to the ${coordinator} to coordinate numbers.`, "success");
+                const mailtoUrl = buildConfirmationMailto(
+                    memberEmail,
+                    socialCc,
+                    `Confirmation: ${evt.title} (${formatUKDate(evt.date)})`,
+                    `Dear ${currentUser.name},\n\nThis confirms your registration of interest for "${evt.title}" on ${formatUKDate(evt.date)}.\n\nRecorded Dietary Requirements: ${currentUser.dietary || 'None'}\n\nFraternal regards,\nSocial Secretary\n${lodgeSettings.name}`
+                );
+                showModal(
+                    "Interest Registered & Email Sent",
+                    `Your interest in "${evt.title}" has been recorded and a confirmation email has been sent to ${memberEmail} (cc: ${socialCc}).`,
+                    "success",
+                    `<a href="${mailtoUrl}" class="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 text-masonicGold border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs transition"><i class="fa-solid fa-envelope mr-1.5"></i> Open Email Copy in Mail Client</a>`
+                );
             }
 
             renderEventsList();
@@ -2147,6 +2310,7 @@
                 renderCalendarGrid();
                 if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
                 renderInterestRegisters();
+                persistPortalState();
                 showModal("Entry Removed", `Removed ${memberName}'s interest registration from the register.`, "success");
             }
         }
@@ -2201,6 +2365,8 @@
 
             const meetingObj = lodgeEvents.find(m => m.id === meetingId) || lodgeEvents.find(m => m.type === 'meeting');
             const parsed = splitMasonicName(rawName);
+            const diningCc = lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
+            const recipientEmail = currentUser && currentUser.email ? currentUser.email : '';
 
             const newBooking = {
                 id: 'bk-' + Date.now(),
@@ -2223,7 +2389,10 @@
             postToGoogleSheet(lodgeSettings.gsheetMeetingsUrl, {
                 timestamp: getUKTimestamp(),
                 action: 'visitor_rsvp',
+                lodgeName: lodgeSettings.name,
+                bookingId: newBooking.id,
                 recordType: newBooking.recordType,
+                meetingId: newBooking.meetingId,
                 meetingDate: formatUKDate(newBooking.meetingDate),
                 meetingTitle: newBooking.meetingTitle,
                 title: newBooking.title,
@@ -2232,23 +2401,50 @@
                 lodgeOrHost: newBooking.lodgeOrHost,
                 constitution: newBooking.constitution,
                 diningOption: newBooking.diningOption,
-                dietary: newBooking.dietary
+                dietary: newBooking.dietary,
+                recipientName: rawName,
+                recipientEmail,
+                diningEmail: diningCc
             });
 
-            showModal("Registration Received", `Thank you ${rawName} (${lodge}). Your visitor registration for "${newBooking.meetingTitle}" has been submitted to the Lodge Secretary and queued for the Meetings Google Sheet.`, "success");
+            const mailtoUrl = buildConfirmationMailto(
+                recipientEmail || diningCc,
+                recipientEmail ? diningCc : '',
+                `Visitor Registration: ${newBooking.meetingTitle} (${formatUKDate(newBooking.meetingDate)})`,
+                `Dear Dining Steward,\n\nPlease register the following Visiting Brother:\n\n• Name: ${rawName}\n• Lodge: ${lodge} (${constitution})\n• Meeting: ${newBooking.meetingTitle} (${formatUKDate(newBooking.meetingDate)})\n• Dining: ${dining}\n• Dietary: ${dietary}\n\nFraternal regards,\n${rawName}`
+            );
+
+            showModal(
+                "Visitor Registration Received",
+                `Thank you ${rawName} (${lodge}). Your visitor registration for "${newBooking.meetingTitle}" has been submitted and copied to ${diningCc}.`,
+                "success",
+                `<a href="${mailtoUrl}" class="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 text-masonicGold border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs transition"><i class="fa-solid fa-envelope mr-1.5"></i> Open Email Copy in Mail Client</a>`
+            );
             document.getElementById('visitor-registration-form').reset();
+        }
+
+        // Helper to build direct mailto links for confirmation fallbacks
+        function buildConfirmationMailto(toEmail, ccEmail, subjectText, bodyText) {
+            const to = encodeURIComponent(toEmail || '');
+            const cc = ccEmail ? `&cc=${encodeURIComponent(ccEmail)}` : '';
+            const subj = encodeURIComponent(subjectText || '');
+            const body = encodeURIComponent(bodyText || '');
+            return `mailto:${to}?subject=${subj}${cc}&body=${body}`;
         }
 
         // Permanent Dining Status (My Profile) & Automatic Confirmation Email
         function sendPermListConfirmationEmail(member, isEnrolled) {
             const parsed = splitMasonicName(member.name);
             const statusLabel = isEnrolled ? 'Joined Permanent Dining List' : 'Left Permanent Dining List';
+            const diningCc = lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
 
-            // 1. Trigger automated email via Meetings & Perm List Google Apps Script (MailApp.sendEmail)
+            // 1. Trigger automated email & upsert Permanent_Dining_List row via Google Apps Script (CC: dining@)
             postToGoogleSheet(lodgeSettings.gsheetMeetingsUrl, {
                 timestamp: getUKTimestamp(),
                 action: 'perm_list_enrollment',
+                memberId: member.id,
                 enrolled: isEnrolled,
+                pausedMeetingIds: member.pausedMeetingIds || [],
                 statusLabel,
                 lodgeName: lodgeSettings.name,
                 fullName: member.name,
@@ -2257,26 +2453,21 @@
                 lastName: parsed.lastName,
                 rank: member.roleTitle,
                 memberEmail: member.email || '',
-                secretaryEmail: lodgeSettings.secEmail,
+                diningEmail: diningCc,
                 dietary: member.dietary || 'None'
             });
 
             // 2. Build mailto link so the Brother can also open/send a direct confirmation copy if desired
-            const recipient = member.email || lodgeSettings.secEmail;
-            const subject = encodeURIComponent(
-                isEnrolled
-                    ? `Confirmation: Joined Permanent Dining List - ${lodgeSettings.name}`
-                    : `Confirmation: Removed from Permanent Dining List - ${lodgeSettings.name}`
-            );
-            const body = encodeURIComponent(
-                `Dear ${member.name},\n\n` +
+            const recipient = member.email || diningCc;
+            const subject = isEnrolled
+                ? `Confirmation: Joined Permanent Dining List - ${lodgeSettings.name}`
+                : `Confirmation: Removed from Permanent Dining List - ${lodgeSettings.name}`;
+            const body = `Dear ${member.name},\n\n` +
                 (isEnrolled
                     ? `This confirms that you have joined the Permanent Dining List for ${lodgeSettings.name}.\n\nYou will automatically be booked in for the Festive Board at all Regular Meetings unless you pause a single meeting in your portal profile.\n\nRecorded Dietary Requirements: ${member.dietary || 'None'}`
                     : `This confirms that you have been removed from the standing Permanent Dining List for ${lodgeSettings.name}.`) +
-                `\n\nFraternal regards,\nLodge Secretary & Dining Steward\n${lodgeSettings.name}`
-            );
-            const ccParam = member.email && lodgeSettings.secEmail ? `&cc=${encodeURIComponent(lodgeSettings.secEmail)}` : '';
-            return `mailto:${encodeURIComponent(recipient)}?subject=${subject}${ccParam}&body=${body}`;
+                `\n\nFraternal regards,\nDining Steward\n${lodgeSettings.name}`;
+            return buildConfirmationMailto(recipient, member.email ? diningCc : '', subject, body);
         }
 
         function renderProfilePermanentDining() {
@@ -2332,13 +2523,14 @@
             persistPortalState();
 
             const mailtoUrl = sendPermListConfirmationEmail(currentUser, isEnrolled);
-            const targetEmail = currentUser.email || lodgeSettings.secEmail;
+            const targetEmail = currentUser.email || lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
+            const diningCc = lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
 
             showModal(
                 isEnrolled ? "Enrolled & Confirmation Email Sent" : "Removed & Confirmation Email Sent",
                 isEnrolled
-                    ? `You have joined the Permanent Dining List for ${lodgeSettings.name}. A confirmation email has been dispatched to ${targetEmail} (cc: ${lodgeSettings.secEmail}).`
-                    : `You have been removed from the standing Permanent Dining List. A confirmation email has been dispatched to ${targetEmail} (cc: ${lodgeSettings.secEmail}).`,
+                    ? `You have joined the Permanent Dining List for ${lodgeSettings.name}. A confirmation email has been dispatched to ${targetEmail} (cc: ${diningCc}).`
+                    : `You have been removed from the standing Permanent Dining List. A confirmation email has been dispatched to ${targetEmail} (cc: ${diningCc}).`,
                 "success",
                 `<a href="${mailtoUrl}" class="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 text-masonicGold border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs transition"><i class="fa-solid fa-envelope mr-1.5"></i> Open Email Copy in Mail Client</a>`
             );
@@ -2372,9 +2564,21 @@
             if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
             persistPortalState();
 
+            // Sync single-meeting pause to Google Sheet so Senior Steward & Secretary see it live across devices
+            postToGoogleSheet(lodgeSettings.gsheetMeetingsUrl, {
+                timestamp: getUKTimestamp(),
+                action: 'perm_meeting_pause',
+                memberId: currentUser.id,
+                fullName: currentUser.name,
+                rank: currentUser.roleTitle,
+                enrolled: currentUser.permDiningActive !== false,
+                pausedMeetingIds: currentUser.pausedMeetingIds,
+                dietary: currentUser.dietary || 'None'
+            });
+
             showModal(
                 "Permanent Dining Paused for 1 Meeting",
-                `Your Festive Board dining place has been paused for "${evt ? evt.title : ''} (${evt ? formatUKDate(evt.date) : ''})" without sending Lodge apologies. Your standing place will resume automatically afterwards.`,
+                `Your Festive Board dining place has been paused for "${evt ? evt.title : ''} (${evt ? formatUKDate(evt.date) : ''})" without sending Lodge apologies, and synced to the Dining Register.`,
                 "success"
             );
         }
@@ -2389,7 +2593,19 @@
             renderPermanentDiningList();
             if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
             persistPortalState();
-            showModal("Dining Resumed", "Your Permanent Dining place has been restored for that meeting.", "success");
+
+            postToGoogleSheet(lodgeSettings.gsheetMeetingsUrl, {
+                timestamp: getUKTimestamp(),
+                action: 'perm_meeting_pause',
+                memberId: currentUser.id,
+                fullName: currentUser.name,
+                rank: currentUser.roleTitle,
+                enrolled: currentUser.permDiningActive !== false,
+                pausedMeetingIds: currentUser.pausedMeetingIds,
+                dietary: currentUser.dietary || 'None'
+            });
+
+            showModal("Dining Resumed", "Your Permanent Dining place has been restored for that meeting and synced.", "success");
         }
 
         // Personal Saved Guests List (My Profile & One-Click Recall)
@@ -2428,14 +2644,6 @@
             if (idx > -1) lodgeMembers[idx].savedGuests = [...currentUser.savedGuests];
             renderProfileSavedGuests();
             persistPortalState();
-        }
-
-        function deleteSavedGuest(guestId) {
-            if (!currentUser || !Array.isArray(currentUser.savedGuests)) return;
-            currentUser.savedGuests = currentUser.savedGuests.filter(g => g.id !== guestId);
-            const idx = lodgeMembers.findIndex(m => m.id === currentUser.id);
-            if (idx > -1) lodgeMembers[idx].savedGuests = [...currentUser.savedGuests];
-            renderProfileSavedGuests();
         }
 
         function renderProfileSavedGuests() {
@@ -2588,8 +2796,13 @@
             }
 
             if (evt.type === 'meeting') {
+                const newBkId = 'bk-' + Date.now();
+                const diningCc = lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
+                const memberEmail = currentUser.email || diningCc;
+                const lodgeOrHostText = role === 'guest' ? `${lodge || 'Guest'} (Host: ${currentUser.name})` : lodgeSettings.name;
+
                 meetingBookings.push({
-                    id: 'bk-' + Date.now(),
+                    id: newBkId,
                     recordType: role === 'guest' ? 'Member Guest' : 'Member RSVP',
                     meetingId: evt.id,
                     meetingDate: evt.date,
@@ -2597,7 +2810,7 @@
                     title,
                     firstName,
                     lastName,
-                    lodgeOrHost: role === 'guest' ? `${lodge || 'Guest'} (Host: ${currentUser.name})` : lodgeSettings.name,
+                    lodgeOrHost: lodgeOrHostText,
                     constitution: 'UGLE',
                     diningOption,
                     dietary
@@ -2608,18 +2821,41 @@
                 postToGoogleSheet(lodgeSettings.gsheetMeetingsUrl, {
                     timestamp: getUKTimestamp(),
                     action: 'meeting_booking',
+                    lodgeName: lodgeSettings.name,
+                    bookingId: newBkId,
                     recordType: role === 'guest' ? 'Member Guest' : 'Member RSVP',
+                    meetingId: evt.id,
                     meetingDate: formatUKDate(evt.date),
                     meetingTitle: evt.title,
                     title,
                     firstName,
                     lastName,
-                    lodgeOrHost: role === 'guest' ? `${lodge || 'Guest'} (Host: ${currentUser.name})` : lodgeSettings.name,
+                    lodgeOrHost: lodgeOrHostText,
                     constitution: 'UGLE',
                     diningOption,
-                    dietary
+                    dietary,
+                    recipientName: currentUser.name,
+                    recipientEmail: currentUser.email || '',
+                    diningEmail: diningCc
                 });
+
+                const mailtoUrl = buildConfirmationMailto(
+                    memberEmail,
+                    currentUser.email ? diningCc : '',
+                    `Dining & Meeting Booking Confirmation: ${evt.title} (${formatUKDate(evt.date)})`,
+                    `Dear ${currentUser.name},\n\nThis confirms your booking for "${evt.title}" on ${formatUKDate(evt.date)}:\n\n• Attendee: ${title} ${firstName} ${lastName} (${role === 'guest' ? 'Member Guest' : 'Member RSVP'})\n• Lodge / Host: ${lodgeOrHostText}\n• Dining Option: ${diningOption}\n• Dietary Requirements: ${dietary}\n\nFraternal regards,\nDining Steward\n${lodgeSettings.name}`
+                );
+
+                closeEventBookingModal();
+                showModal(
+                    "Booking Confirmed & Email Sent",
+                    `Recorded ${title} ${firstName} ${lastName} (${diningOption}) for "${evt.title}" and sent confirmation to ${memberEmail} (cc: ${diningCc}).`,
+                    "success",
+                    `<a href="${mailtoUrl}" class="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 text-masonicGold border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs transition"><i class="fa-solid fa-envelope mr-1.5"></i> Open Email Copy in Mail Client</a>`
+                );
             } else {
+                const socialCc = lodgeSettings.socialEmail || 'social@staugustinelodge.org.uk';
+                const memberEmail = currentUser.email || socialCc;
                 const fullGuestLabel = `${title} ${firstName} ${lastName} (Guest of ${currentUser.name})`;
                 memberVisitations.push({
                     eventId: evt.id,
@@ -2637,6 +2873,8 @@
                 postToGoogleSheet(lodgeSettings.gsheetSocialUrl, {
                     timestamp: getUKTimestamp(),
                     action: 'Guest Booked',
+                    lodgeName: lodgeSettings.name,
+                    eventId: evt.id,
                     eventType: evt.type,
                     eventDate: formatUKDate(evt.date),
                     eventTitle: evt.title,
@@ -2644,41 +2882,51 @@
                     firstName,
                     lastName,
                     hostMember: currentUser.name,
+                    memberEmail: currentUser.email || '',
+                    socialEmail: socialCc,
                     dietary
                 });
-            }
 
-            closeEventBookingModal();
-            showModal(
-                "Booking Confirmed",
-                `Recorded ${title} ${firstName} ${lastName} (${diningOption}) for "${evt.title}" and synced to the ${evt.type === 'meeting' ? 'Meetings & Perm List' : 'Social Events'} Google Sheet.`,
-                "success"
-            );
+                const mailtoUrl = buildConfirmationMailto(
+                    memberEmail,
+                    currentUser.email ? socialCc : '',
+                    `Guest Booking Confirmation: ${evt.title} (${formatUKDate(evt.date)})`,
+                    `Dear ${currentUser.name},\n\nThis confirms your guest booking for "${evt.title}" on ${formatUKDate(evt.date)}:\n\n• Guest: ${title} ${firstName} ${lastName}\n• Lodge / Note: ${lodge || 'Guest'}\n• Dining Option: ${diningOption}\n• Dietary Requirements: ${dietary}\n\nFraternal regards,\nSocial Secretary\n${lodgeSettings.name}`
+                );
+
+                closeEventBookingModal();
+                showModal(
+                    "Guest Booked & Email Sent",
+                    `Recorded ${title} ${firstName} ${lastName} for "${evt.title}" and sent confirmation to ${memberEmail} (cc: ${socialCc}).`,
+                    "success",
+                    `<a href="${mailtoUrl}" class="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 text-masonicGold border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs transition"><i class="fa-solid fa-envelope mr-1.5"></i> Open Email Copy in Mail Client</a>`
+                );
+            }
         }
 
-        // Permanent Dining List Rendering & Google Sheets Sync
+        // Admin / Senior Steward Permanent Dining List Table Renderer
         function renderPermanentDiningList() {
             const tbody = document.getElementById('admin-perm-dining-tbody');
             const filterSelect = document.getElementById('admin-perm-meeting-filter');
-            const rsvpTbody = document.getElementById('admin-meeting-rsvps-tbody');
-            const rsvpCount = document.getElementById('admin-meeting-rsvp-count');
+            const rsvpsTbody = document.getElementById('admin-meeting-rsvps-tbody');
+            const rsvpCountEl = document.getElementById('admin-meeting-rsvp-count');
             if (!tbody) return;
 
             const selectedMeetingId = filterSelect ? filterSelect.value : '';
 
             tbody.innerHTML = lodgeMembers.map(m => {
                 const isEnrolled = m.permDiningActive !== false;
-                const isPausedForMeeting = isEnrolled && Array.isArray(m.pausedMeetingIds) && m.pausedMeetingIds.includes(selectedMeetingId);
+                const isPaused = isEnrolled && Array.isArray(m.pausedMeetingIds) && m.pausedMeetingIds.includes(selectedMeetingId);
 
                 const permBadge = isEnrolled
-                    ? `<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">Active Perm Diner</span>`
+                    ? `<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">Active</span>`
                     : `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Opted Out</span>`;
 
                 const meetingStatusBadge = !isEnrolled
-                    ? `<span class="text-[11px] text-slate-500">Not Dining</span>`
-                    : isPausedForMeeting
-                        ? `<span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold"><i class="fa-solid fa-pause mr-1"></i>Paused (1 Meeting)</span>`
-                        : `<span class="text-[10px] px-2 py-0.5 rounded bg-blue-600/20 text-blue-300 border border-blue-500/30 font-semibold"><i class="fa-solid fa-check mr-1"></i>Dining Confirmed</span>`;
+                    ? `<span class="text-slate-500">Not on Perm List</span>`
+                    : isPaused
+                        ? `<span class="text-amber-400 font-semibold"><i class="fa-solid fa-pause mr-1"></i>Paused (1 Meeting)</span>`
+                        : `<span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check mr-1"></i>Dining Confirmed</span>`;
 
                 return `
                     <tr class="hover:bg-slate-800/40 transition">
@@ -2689,30 +2937,30 @@
                         <td class="py-2.5 px-3 text-slate-300">${m.dietary || 'None'}</td>
                         <td class="py-2.5 px-3 text-right">
                             <button type="button" onclick="adminToggleMemberPermDining('${m.id}')" class="bg-slate-800 hover:bg-masonicGold hover:text-slate-950 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-medium transition">
-                                ${isEnrolled ? 'Opt Out' : 'Enrol'}
+                                ${isEnrolled ? 'Remove' : 'Enrol'}
                             </button>
                         </td>
                     </tr>
                 `;
             }).join('');
 
-            if (rsvpTbody && rsvpCount) {
+            if (rsvpsTbody && rsvpCountEl) {
                 const filteredBookings = selectedMeetingId
-                    ? meetingBookings.filter(b => b.meetingId === selectedMeetingId)
+                    ? meetingBookings.filter(b => !b.meetingId || b.meetingId === selectedMeetingId)
                     : meetingBookings;
-                rsvpCount.innerText = `${filteredBookings.length} ${filteredBookings.length === 1 ? 'Entry' : 'Entries'}`;
+                rsvpCountEl.innerText = `${filteredBookings.length} ${filteredBookings.length === 1 ? 'Entry' : 'Entries'}`;
 
                 if (filteredBookings.length === 0) {
-                    rsvpTbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No additional guest or visitor bookings for this meeting yet.</td></tr>`;
+                    rsvpsTbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No additional RSVPs, visiting Brethren, or guests booked for this meeting yet.</td></tr>`;
                 } else {
-                    rsvpTbody.innerHTML = filteredBookings.map(b => `
+                    rsvpsTbody.innerHTML = filteredBookings.map(b => `
                         <tr class="hover:bg-slate-800/40 transition">
-                            <td class="py-2 px-3 text-slate-400">${formatUKDate(b.meetingDate)}</td>
-                            <td class="py-2 px-3 font-semibold text-masonicGold">${b.title}</td>
-                            <td class="py-2 px-3 text-slate-100">${b.firstName}</td>
-                            <td class="py-2 px-3 text-slate-100">${b.lastName}</td>
+                            <td class="py-2 px-3 text-slate-300">${formatUKDate(b.meetingDate)} — ${b.meetingTitle}</td>
+                            <td class="py-2 px-3 font-medium text-masonicGold">${b.title}</td>
+                            <td class="py-2 px-3 font-semibold text-slate-100">${b.firstName}</td>
+                            <td class="py-2 px-3 font-semibold text-slate-100">${b.lastName}</td>
                             <td class="py-2 px-3 text-slate-300">${b.lodgeOrHost}</td>
-                            <td class="py-2 px-3 text-slate-300">${b.diningOption} • <span class="text-amber-300/90">${b.dietary}</span></td>
+                            <td class="py-2 px-3 text-slate-300">${b.diningOption} <span class="text-slate-400">(${b.dietary})</span></td>
                         </tr>
                     `).join('');
                 }
@@ -2732,10 +2980,11 @@
             persistPortalState();
 
             const mailtoUrl = sendPermListConfirmationEmail(lodgeMembers[idx], newStatus);
-            const targetEmail = lodgeMembers[idx].email || lodgeSettings.secEmail;
+            const targetEmail = lodgeMembers[idx].email || lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
+            const diningCc = lodgeSettings.diningEmail || 'dining@staugustinelodge.org.uk';
             showModal(
                 newStatus ? "Enrolled & Confirmation Email Sent" : "Opted Out & Confirmation Email Sent",
-                `Updated Permanent Dining status for ${lodgeMembers[idx].name} and sent a confirmation email to ${targetEmail}.`,
+                `Updated Permanent Dining status for ${lodgeMembers[idx].name} and sent a confirmation email to ${targetEmail} (cc: ${diningCc}).`,
                 "success",
                 `<a href="${mailtoUrl}" class="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 text-masonicGold border border-slate-700 font-semibold py-2 px-3 rounded-xl text-xs transition"><i class="fa-solid fa-envelope mr-1.5"></i> Open Email Copy in Mail Client</a>`
             );
@@ -2752,11 +3001,14 @@
                 const isEnrolled = m.permDiningActive !== false;
                 const isPaused = isEnrolled && Array.isArray(m.pausedMeetingIds) && m.pausedMeetingIds.includes(selectedMeetingId);
                 return {
+                    memberId: m.id,
+                    fullName: m.name,
                     title: parsed.title,
                     firstName: parsed.firstName,
                     lastName: parsed.lastName,
                     rank: m.roleTitle,
                     permStatus: isEnrolled ? 'Active' : 'Opted Out',
+                    pausedMeetingIds: m.pausedMeetingIds || [],
                     meetingStatus: !isEnrolled ? 'Not Dining' : isPaused ? 'Paused (1 Meeting)' : 'Dining Confirmed',
                     dietary: m.dietary || 'None'
                 };
@@ -2773,7 +3025,7 @@
                 "Permanent Dining List Synced",
                 lodgeSettings.gsheetMeetingsUrl
                     ? `Exported ${rows.length} Brethren (with split Title, First Name, Last Name & Pause statuses) to your Meetings & Perm List Google Sheet.`
-                    : `Prepared ${rows.length} Brethren records for "${meetingTitle}". Paste your Meetings & Perm List Web App URL in the Google Sheets section below to enable live cloud posting.`,
+                    : `Prepared ${rows.length} Brethren records for "${meetingTitle}". Paste your Meetings & Perm List Web App URL in the Google Sheets section above to enable live cloud posting.`,
                 "success"
             );
         }
@@ -2803,12 +3055,166 @@
             }
         }
 
+        // Convert DD-MM-YYYY back to ISO YYYY-MM-DD when reading rows from Google Sheets
+        function parseUKDateToISO(ukDateStr) {
+            if (!ukDateStr || typeof ukDateStr !== 'string') return '';
+            const clean = ukDateStr.trim().split(' ')[0];
+            const parts = clean.split('-');
+            if (parts.length === 3 && parts[0].length === 2 && parts[2].length === 4) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return clean;
+        }
+
+        // Two-Way Sync: Pull live Permanent Dining List, Meeting RSVPs & Social/Visitation Registers from Google Sheets via doGet(e)
+        async function pullAllFromGoogleSheets(notifyUser = false) {
+            const meetingsUrl = lodgeSettings.gsheetMeetingsUrl;
+            const socialUrl = lodgeSettings.gsheetSocialUrl;
+            if (!meetingsUrl && !socialUrl) {
+                if (notifyUser) {
+                    showModal("No Web App URLs Configured", "Please paste your Meetings & Perm List and/or Social Events & Visitations /exec Web App URL first.", "error");
+                }
+                return;
+            }
+
+            let updatedSections = [];
+            try {
+                if (meetingsUrl) {
+                    const res = await fetch(meetingsUrl, { method: 'GET' });
+                    const data = await res.json();
+                    if (data && data.status === 'success') {
+                        // 1. Reconcile Permanent_Dining_List rows into lodgeMembers
+                        if (Array.isArray(data.permRows)) {
+                            data.permRows.forEach(row => {
+                                // Columns: [Updated At, Member ID, Full Name, Rank, Perm Status, Paused Meeting IDs, Dietary]
+                                const memberId = String(row[1] || '').trim();
+                                const fullName = String(row[2] || '').trim();
+                                const permStatus = String(row[4] || '').trim();
+                                const pausedRaw = String(row[5] || '').trim();
+                                const dietary = String(row[6] || '').trim();
+
+                                const idx = lodgeMembers.findIndex(m => (memberId && m.id === memberId) || m.name === fullName);
+                                if (idx > -1) {
+                                    lodgeMembers[idx].permDiningActive = permStatus !== 'Opted Out';
+                                    lodgeMembers[idx].pausedMeetingIds = pausedRaw ? pausedRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+                                    if (dietary) lodgeMembers[idx].dietary = dietary;
+                                    if (currentUser && currentUser.id === lodgeMembers[idx].id) {
+                                        currentUser = { ...lodgeMembers[idx] };
+                                    }
+                                }
+                            });
+                        }
+
+                        // 2. Reconcile Meeting_RSVPs_Guests rows into meetingBookings
+                        if (Array.isArray(data.rsvpRows) && data.rsvpRows.length > 0) {
+                            const remoteBookings = [];
+                            data.rsvpRows.forEach((row, i) => {
+                                // Columns: [Submitted At, Booking ID, Record Type, Meeting ID, Meeting Date, Meeting Title, Title, First Name, Last Name, Lodge/Host, Constitution, Dining Option, Dietary]
+                                const recordType = String(row[2] || '').trim();
+                                if (recordType === 'Connection Test') return;
+                                const bookingId = String(row[1] || `sheet-bk-${i}`).trim();
+                                const meetingId = String(row[3] || '').trim();
+                                const meetingDate = parseUKDateToISO(String(row[4] || ''));
+                                const meetingTitle = String(row[5] || '').trim();
+                                remoteBookings.push({
+                                    id: bookingId,
+                                    recordType: recordType || 'Meeting RSVP',
+                                    meetingId,
+                                    meetingDate,
+                                    meetingTitle,
+                                    title: String(row[6] || 'Bro.').trim(),
+                                    firstName: String(row[7] || '').trim(),
+                                    lastName: String(row[8] || '').trim(),
+                                    lodgeOrHost: String(row[9] || '').trim(),
+                                    constitution: String(row[10] || 'UGLE').trim(),
+                                    diningOption: String(row[11] || 'Attending Festive Board').trim(),
+                                    dietary: String(row[12] || 'None').trim()
+                                });
+                            });
+                            if (remoteBookings.length > 0) {
+                                meetingBookings = remoteBookings;
+                            }
+                        }
+                        updatedSections.push('Meetings & Permanent Dining List');
+                    }
+                }
+
+                if (socialUrl) {
+                    const res = await fetch(socialUrl, { method: 'GET' });
+                    const data = await res.json();
+                    if (data && data.status === 'success' && Array.isArray(data.rows)) {
+                        // Replay event log in chronological order to get latest live registrations & withdrawals
+                        const activeMap = new Map();
+                        data.rows.forEach(row => {
+                            // Columns: [Submitted At, Action, Event ID, Category, Event Date, Event Title, Title, First Name, Last Name, Host/Member, Dietary]
+                            const action = String(row[1] || '').trim();
+                            if (action === 'Connection Test') return;
+                            const eventId = String(row[2] || '').trim();
+                            const eventType = String(row[3] || 'social').trim();
+                            const eventDate = parseUKDateToISO(String(row[4] || ''));
+                            const eventTitle = String(row[5] || '').trim();
+                            const title = String(row[6] || '').trim();
+                            const firstName = String(row[7] || '').trim();
+                            const lastName = String(row[8] || '').trim();
+                            const hostMember = String(row[9] || '').trim();
+
+                            const memberLabel = action === 'Guest Booked'
+                                ? `${title} ${firstName} ${lastName} (Guest of ${hostMember})`
+                                : hostMember;
+                            const key = `${eventId}::${memberLabel}`;
+
+                            if (action === 'Interest Withdrawn') {
+                                activeMap.delete(key);
+                            } else if (action === 'Interest Registered' || action === 'Guest Booked') {
+                                activeMap.set(key, {
+                                    eventId,
+                                    member: memberLabel,
+                                    eventTitle,
+                                    eventType,
+                                    date: eventDate
+                                });
+                            }
+                        });
+                        memberVisitations = Array.from(activeMap.values());
+                        updatedSections.push('Social & Visitation Register');
+                    }
+                }
+
+                persistPortalState();
+                renderPortal();
+                renderPermanentDiningList();
+                renderInterestRegisters();
+                renderCalendarGrid();
+                renderEventsList();
+                if (selectedDetailDate) selectCalendarDay(selectedDetailDate);
+
+                const badge = document.getElementById('gsheet-last-sync-badge');
+                if (badge) {
+                    badge.className = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold px-2.5 py-1 rounded-full";
+                    badge.innerText = `Synced ${getUKTimestamp().split(' ')[1]}`;
+                }
+
+                if (notifyUser) {
+                    showModal("Two-Way Sync Complete", `Pulled the latest live records from Google Sheets (${updatedSections.join(' & ')}). All Brethren views are now up to date.`, "success");
+                }
+            } catch (err) {
+                if (notifyUser) {
+                    showModal(
+                        "Sync Notice",
+                        "Could not read JSON from one of the Web App URLs. Ensure both Apps Scripts have been updated with the new doGet(e) code and deployed as a New Version with access set to 'Anyone'.",
+                        "error"
+                    );
+                }
+            }
+        }
+
         function saveGoogleSheetWebhooks(e) {
             e.preventDefault();
             lodgeSettings.gsheetMeetingsUrl = document.getElementById('setting-gsheet-meetings-url').value.trim();
             lodgeSettings.gsheetSocialUrl = document.getElementById('setting-gsheet-social-url').value.trim();
             persistPortalState();
-            showModal("Google Sheet URLs Saved", "Your Meetings & Perm List and Social Events & Visitations Google Apps Script webhook URLs have been saved.", "success");
+            renderPortal();
+            pullAllFromGoogleSheets(true);
         }
 
         function testGoogleSheetWebhook(sheetType) {
@@ -3019,13 +3425,17 @@
             lodgeSettings.subtitle = document.getElementById('setting-lodge-subtitle').value;
             lodgeSettings.footerText = document.getElementById('setting-footer-text').value;
             lodgeSettings.secEmail = document.getElementById('setting-sec-email').value;
+            const diningInput = document.getElementById('setting-dining-email');
+            const socialInput = document.getElementById('setting-social-email');
+            if (diningInput) lodgeSettings.diningEmail = diningInput.value.trim() || 'dining@staugustinelodge.org.uk';
+            if (socialInput) lodgeSettings.socialEmail = socialInput.value.trim() || 'social@staugustinelodge.org.uk';
 
             document.getElementById('brand-lodge-name').innerText = lodgeSettings.name;
             document.getElementById('brand-lodge-subtitle').innerText = lodgeSettings.subtitle;
             document.getElementById('footer-text-display').innerText = lodgeSettings.footerText;
             persistPortalState();
 
-            showModal("OEM Settings Saved", "Lodge branding and footer details have been updated across the portal.", "success");
+            showModal("OEM Settings Saved", "Lodge branding, footer details, and Dining/Social CC email addresses have been updated across the portal.", "success");
         }
 
         function showModal(title, message, type = 'success', extraHtml = '') {
